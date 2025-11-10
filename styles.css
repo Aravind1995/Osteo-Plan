@@ -264,7 +264,7 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
   top:54px;
   left:0;
   bottom:0;
-  width:70%;
+  width: 70%;
   background:var(--panel);
   border-right:1px solid var(--border);
   overflow:auto;
@@ -279,4 +279,24 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
 @media (max-width:700px){
   .portrait-buttons{display:flex;}
   .sidebar{display:none !important;}
+}
+
+/* v10 iOS touch-safe improvements */
+.portrait-btn{
+  z-index:99999 !important;
+  position:relative;
+  pointer-events:auto !important;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+}
+.portrait-presets-panel{
+  z-index:99998 !important;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  will-change: transform;
+}
+.portrait-action-bar{
+  z-index:99998 !important;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
 }

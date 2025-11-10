@@ -1015,3 +1015,102 @@ function exportVisibleCanvas(filename='osteo_export.png'){
     }
   });
 })();
+
+
+
+// v10: iOS-safe portrait toggles — disable canvas pointer events while panel open, small open delay
+(function(){
+  const pBtn = document.getElementById('btnPresetsToggle');
+  const aBtn = document.getElementById('btnActionsToggle');
+  const pPanel = document.getElementById('portraitPresetsPanel');
+  const aBar = document.getElementById('portraitActionBar');
+  const sidebar = document.querySelector('.sidebar');
+  const canvas = document.getElementById('canvas');
+
+  // Populate panel early so iOS hit-testing recognizes elements
+  if(sidebar && pPanel){
+    pPanel.innerHTML = '<div class="close-btn" style="display:flex;justify-content:flex-end;padding:8px;"><button id="closePresets" class="ghost">✕ Close</button></div>' + sidebar.innerHTML;
+  }
+
+  function enableCanvas(enable){
+    try{
+      if(canvas) canvas.style.pointerEvents = enable ? 'auto' : 'none';
+    }catch(e){}
+  }
+
+  function openPresets(){
+    if(!pPanel) return;
+    // disable canvas events first
+    enableCanvas(false);
+    // small delay to let iOS complete repaint/hit-test
+    setTimeout(()=>{
+      pPanel.style.display='block';
+      pPanel.classList.add('active');
+    },150);
+  }
+  function closePresets(){
+    if(!pPanel) return;
+    pPanel.classList.remove('active');
+    setTimeout(()=>{ pPanel.style.display='none'; enableCanvas(true); },250);
+  }
+
+  function togglePresets(){
+    if(!pPanel) return;
+    if(pPanel.classList.contains('active')) closePresets(); else openPresets();
+  }
+
+  function openActions(){
+    if(!aBar) return;
+    enableCanvas(false);
+    setTimeout(()=>{ aBar.style.display = 'flex'; },150);
+  }
+  function closeActions(){
+    if(!aBar) return;
+    aBar.style.display = 'none';
+    enableCanvas(true);
+  }
+  function toggleActions(){
+    if(!aBar) return;
+    if(aBar.style.display==='flex') closeActions(); else openActions();
+  }
+
+  if(pBtn) pBtn.addEventListener('click', function(e){ e.stopPropagation(); togglePresets(); });
+  if(aBtn) aBtn.addEventListener('click', function(e){ e.stopPropagation(); toggleActions(); });
+
+  // close buttons inside panel
+  document.addEventListener('click', function(e){
+    // if clicked outside panels in portrait, close them
+    if(window.innerWidth>700) return;
+    const target = e.target;
+    if(pPanel && pPanel.classList.contains('active')){
+      if(!pPanel.contains(target) && !pBtn.contains(target)){
+        closePresets();
+      }
+    }
+    if(aBar && aBar.style.display==='flex'){
+      if(!aBar.contains(target) && !aBtn.contains(target)){
+        closeActions();
+      }
+    }
+  }, true);
+
+  // wire portrait action bar buttons to main controls
+  const loadBtn = document.getElementById('pLoad');
+  const exportBtn = document.getElementById('pExport');
+  const helpBtn = document.getElementById('pHelp');
+  const fileInput = document.getElementById('imageLoader');
+  const exportMain = document.getElementById('btnExport');
+  const helpMain = document.getElementById('btnHelp');
+
+  if(loadBtn && fileInput){ loadBtn.addEventListener('click', ()=> fileInput.click()); }
+  if(exportBtn && exportMain){ exportBtn.addEventListener('click', ()=> exportMain.click()); }
+  if(helpBtn && helpMain){ helpBtn.addEventListener('click', ()=> helpMain.click()); }
+
+  // ensure panels hide on resize to desktop
+  window.addEventListener('resize', ()=>{ if(window.innerWidth>700){ if(pPanel){ pPanel.classList.remove('active'); pPanel.style.display='none'; } if(aBar){ aBar.style.display='none'; } enableCanvas(true); }});
+
+  // Ensure panels are initially hidden
+  if(pPanel){ pPanel.style.display='none'; pPanel.classList.remove('active'); }
+  if(aBar){ aBar.style.display='none'; }
+
+})();
