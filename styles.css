@@ -242,3 +242,31 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
 @media (orientation: landscape) {
   .rotate-notice { display: none !important; }
 }
+
+
+/* Updated portrait mode message box styling */
+@media (orientation: portrait) {
+  .rotate-notice {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 400px;
+    background: rgba(0,0,0,0.85);
+    color: #ffffff;
+    text-align: center;
+    padding: 20px 24px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    z-index: 9999;
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+}
+
+@media (orientation: landscape) {
+  .rotate-notice { display: none !important; }
+}
