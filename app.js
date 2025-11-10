@@ -944,3 +944,132 @@ function exportVisibleCanvas(filename='osteo_export.png'){
     mobileExportPNG.addEventListener('click', (e)=>{ e.preventDefault(); exportVisibleCanvas(); });
   }
 })();
+
+
+
+/* --- Export Full PNG (compose canvas + readouts) --- */
+async function exportFullPNG() {
+  try {
+    const canvasElem = document.getElementById('canvas');
+    const readoutsElem = document.getElementById('readouts');
+    if (!canvasElem) {
+      console.error('Canvas element not found');
+      return;
+    }
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = canvasElem.clientWidth;
+    const cssH = canvasElem.clientHeight;
+
+    // create output canvas at device pixel ratio
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = Math.round(cssW * dpr);
+    outCanvas.height = Math.round(cssH * dpr);
+    outCanvas.style.width = cssW + 'px';
+    outCanvas.style.height = cssH + 'px';
+    const ctx = outCanvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    // fill background (match app background)
+    ctx.fillStyle = getComputedStyle(document.body).backgroundColor || '#0a0f18';
+    ctx.fillRect(0, 0, cssW, cssH);
+
+    // draw main canvas content
+    ctx.drawImage(canvasElem, 0, 0, cssW, cssH);
+
+    // draw a semi-transparent strip on right (like desktop inspector) if readouts exist
+    const stripW = Math.min(360, Math.round(cssW * 0.32));
+    if (readoutsElem && readoutsElem.innerText.trim()) {
+      ctx.fillStyle = 'rgba(10,15,24,0.92)';
+      ctx.fillRect(cssW - stripW, 0, stripW, cssH);
+
+      // collect lines from .entry blocks, fallback to innerText
+      const lines = [];
+      readoutsElem.querySelectorAll('.entry').forEach(el => {
+        const title = el.querySelector('.title') ? el.querySelector('.title').innerText.trim() : '';
+        const value = el.querySelector('.value') ? el.querySelector('.value').innerText.trim() : '';
+        if (title || value) lines.push((title ? title + ': ' : '') + value);
+      });
+      if (lines.length === 0) {
+        // fallback split by lines
+        const raw = readoutsElem.innerText || '';
+        raw.split('\n').map(s => s.trim()).filter(Boolean).forEach(l => lines.push(l));
+      }
+
+      // render text onto the strip with wrapping
+      ctx.fillStyle = '#e8ecf1';
+      const padding = 14;
+      const fontSize = 13;
+      ctx.font = fontSize + 'px Inter, Arial, sans-serif';
+      ctx.textBaseline = 'top';
+      const lineHeight = Math.round(fontSize * 1.35);
+      let y = padding;
+      const x = cssW - stripW + padding;
+      const maxTextW = stripW - padding * 2;
+
+      function wrapText(text, xPos, yPos) {
+        const words = text.split(' ');
+        let line = '';
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxTextW && n > 0) {
+            ctx.fillText(line.trim(), xPos, yPos);
+            yPos += lineHeight;
+            line = words[n] + ' ';
+          } else {
+            line = testLine;
+          }
+        }
+        if (line) {
+          ctx.fillText(line.trim(), xPos, yPos);
+          yPos += lineHeight;
+        }
+        return yPos;
+      }
+
+      for (const ln of lines) {
+        y = wrapText(ln, x, y);
+        if (y > cssH - padding) break;
+      }
+    }
+
+    // create and download PNG
+    const dataURL = outCanvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = 'OsteoPlan_export.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (err) {
+    console.error('exportFullPNG error', err);
+    // fallback to previous export if exists
+    const evt = new Event('exportFallback');
+    window.dispatchEvent(evt);
+  }
+}
+
+// Attach to Export button (override existing handler if present)
+function attachExportFullPNG() {
+  const btn = document.getElementById('btnExport');
+  if (!btn) return;
+  // remove existing click listeners by cloning
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    exportFullPNG();
+  });
+}
+// try to attach once DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', attachExportFullPNG);
+} else {
+  attachExportFullPNG();
+}
+// Also listen for dynamic UI that might re-insert button: simple mutation observer
+try {
+  const obs = new MutationObserver(() => { attachExportFullPNG(); });
+  obs.observe(document.body, { childList: true, subtree: true });
+} catch (e) { /* ignore */ }
