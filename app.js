@@ -944,3 +944,40 @@ function exportVisibleCanvas(filename='osteo_export.png'){
     mobileExportPNG.addEventListener('click', (e)=>{ e.preventDefault(); exportVisibleCanvas(); });
   }
 })();
+
+
+// v7: Clean left-side sliding Tools overlay (50%) with 20% results fixed bottom
+(function(){
+  const toolsBtn = document.getElementById('btnToolsToggle');
+  const toolsOverlay = document.getElementById('toolsOverlay');
+  const sidebar = document.querySelector('.sidebar');
+  const canvas = document.getElementById('canvas');
+  if(sidebar && toolsOverlay){ toolsOverlay.innerHTML = '<div class="close-btn"><button id="closeTools" class="ghost">✕ Close</button></div>' + sidebar.innerHTML; }
+  function openTools(){
+    if(!toolsOverlay) return;
+    toolsOverlay.classList.add('active');
+    toolsOverlay.style.display='block';
+    if(canvas) canvas.style.pointerEvents='none';
+  }
+  function closeTools(){
+    if(!toolsOverlay) return;
+    toolsOverlay.classList.remove('active');
+    setTimeout(()=>{ toolsOverlay.style.display='none'; },250);
+    if(canvas) canvas.style.pointerEvents='auto';
+  }
+  if(toolsBtn){
+    toolsBtn.addEventListener('click', ()=>{
+      if(window.innerWidth>700) return;
+      if(toolsOverlay.classList.contains('active')) closeTools(); else openTools();
+    });
+  }
+  document.addEventListener('click', (e)=>{
+    if(window.innerWidth>700) return;
+    if(!toolsOverlay.classList.contains('active')) return;
+    const rect = toolsOverlay.getBoundingClientRect();
+    if(e.clientX > rect.right){ closeTools(); }
+  });
+  window.addEventListener('resize', ()=>{
+    if(window.innerWidth>700 && toolsOverlay.classList.contains('active')) closeTools();
+  });
+})();
