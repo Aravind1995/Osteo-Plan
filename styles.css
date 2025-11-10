@@ -220,3 +220,25 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
 .mobile-action-bar { z-index: 10000 !important; }
 /* Make buttons easier to tap */
 .mobile-action-btn, .mobile-action-toggle { touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0.15); }
+
+
+/* Portrait mode notice */
+@media (orientation: portrait) {
+  .rotate-notice {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    z-index: 9999;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+}
+
+@media (orientation: landscape) {
+  .rotate-notice { display: none !important; }
+}
