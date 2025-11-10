@@ -341,3 +341,39 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
 @media (orientation: landscape) {
   #rotateNotice.rotate-notice, .rotate-notice, #rotateNotice { display:none !important; }
 }
+
+
+/* Landscape layout for mobile devices: 25% side panels */
+@media (max-width: 700px) and (orientation: landscape) {
+  .content {
+    grid-template-columns: 25% 1fr 25% !important;
+    grid-template-rows: 1fr !important;
+  }
+
+  .sidebar, .inspector {
+    display: block !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    border: 1px solid var(--border);
+    overflow-y: auto;
+  }
+
+  .stage {
+    order: 0 !important;
+    height: 100% !important;
+  }
+
+  #canvasWrapper, #canvas {
+    height: 100% !important;
+    width: 100% !important;
+  }
+
+  .mobile-action-bar {
+    display: none !important;
+  }
+
+  #rotateNotice {
+    display: none !important;
+  }
+}
