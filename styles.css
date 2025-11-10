@@ -295,3 +295,49 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
     line-height: 1.5;
   }
 }
+
+
+/* Strong override to ensure perfect centering of the rotate notice */
+/* Use a fixed size box and flex centering; highest specificity and !important to override earlier rules */
+@media (orientation: portrait) {
+  #rotateNotice.rotate-notice, .rotate-notice, #rotateNotice {
+    box-sizing: border-box !important;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 86% !important;
+    max-width: 420px !important;
+    min-height: 220px !important;
+    padding: 18px 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    background: rgba(0,0,0,0.92) !important;
+    color: #ffffff !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    border-radius: 16px !important;
+    z-index: 2147483647 !important; /* maximum z-index to be on top */
+    border: 2px solid rgba(255,255,255,0.28) !important;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6) !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    word-break: break-word !important;
+  }
+
+  /* Ensure emoji doesn't push baseline — force baseline alignment in center */
+  #rotateNotice.rotate-notice span, .rotate-notice span, #rotateNotice span {
+    display:inline-block !important;
+    vertical-align: middle !important;
+    line-height: 1 !important;
+  }
+}
+
+/* Hide notice in landscape explicitly */
+@media (orientation: landscape) {
+  #rotateNotice.rotate-notice, .rotate-notice, #rotateNotice { display:none !important; }
+}
