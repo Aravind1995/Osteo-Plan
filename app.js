@@ -1114,3 +1114,40 @@ function exportVisibleCanvas(filename='osteo_export.png'){
   if(aBar){ aBar.style.display='none'; }
 
 })();
+
+
+// v11: iOS hit-test helper for portrait buttons
+(function(){
+  const pBtn = document.getElementById('btnPresetsToggle');
+  const aBtn = document.getElementById('btnActionsToggle');
+  const canvas = document.getElementById('canvas');
+
+  function disableCanvas(){
+    try { if(canvas) canvas.style.pointerEvents = 'none'; } catch(e){}
+  }
+  function enableCanvas(delay = 250){
+    try { setTimeout(()=>{ if(canvas) canvas.style.pointerEvents = 'auto'; }, delay); } catch(e){}
+  }
+
+  function attach(btn){
+    if(!btn) return;
+    btn.addEventListener('touchstart', function(e){
+      e.preventDefault && e.preventDefault();
+      e.stopPropagation && e.stopPropagation();
+      disableCanvas();
+    }, {passive:false});
+    btn.addEventListener('mousedown', function(e){
+      e.preventDefault && e.preventDefault();
+      disableCanvas();
+    });
+    btn.addEventListener('touchend', function(){ enableCanvas(300); });
+    btn.addEventListener('blur', function(){ enableCanvas(150); });
+  }
+
+  attach(pBtn);
+  attach(aBtn);
+
+  document.addEventListener('click', function(){ enableCanvas(50); }, true);
+  window.addEventListener('resize', function(){ enableCanvas(50); });
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') enableCanvas(50); });
+})();

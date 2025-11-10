@@ -300,3 +300,22 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
   -webkit-transform: translate3d(0,0,0);
   transform: translate3d(0,0,0);
 }
+
+
+/* v11 iOS Safari touch-hit fix */
+.portrait-buttons {
+  position: relative !important;
+  z-index: 2147483647 !important;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.portrait-btn {
+  position: relative !important;
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-tap-highlight-color: rgba(0,0,0,0.12);
+}
