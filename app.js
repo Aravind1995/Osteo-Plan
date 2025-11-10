@@ -946,7 +946,7 @@ function exportVisibleCanvas(filename='osteo_export.png'){
 })();
 
 
-// v9: Portrait buttons for Presets + Actions
+ for Presets + Actions
 (function(){
   const pBtn = document.getElementById('btnPresetsToggle');
   const aBtn = document.getElementById('btnActionsToggle');
@@ -1018,7 +1018,7 @@ function exportVisibleCanvas(filename='osteo_export.png'){
 
 
 
-// v10: iOS-safe portrait toggles — disable canvas pointer events while panel open, small open delay
+ — disable canvas pointer events while panel open, small open delay
 (function(){
   const pBtn = document.getElementById('btnPresetsToggle');
   const aBtn = document.getElementById('btnActionsToggle');
@@ -1116,7 +1116,7 @@ function exportVisibleCanvas(filename='osteo_export.png'){
 })();
 
 
-// v11: iOS hit-test helper for portrait buttons
+ for portrait buttons
 (function(){
   const pBtn = document.getElementById('btnPresetsToggle');
   const aBtn = document.getElementById('btnActionsToggle');

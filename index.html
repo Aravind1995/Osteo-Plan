@@ -24,13 +24,19 @@
 
 <div class="divider"></div>
 <button class="ghost" id="btnHelp">❔ Help</button>
-  <div class="mobile-controls"><button id="btnLeftMenu" class="mobile-toggle" title="Menu">☰</button></div></div>  <div class="portrait-buttons">
-    <button id="btnPresetsToggle" class="portrait-btn" tabindex="0" role="button">⚙ Presets</button>
-    <button id="btnActionsToggle" class="portrait-btn" tabindex="0" role="button">⚡ Actions</button>
-  </div>
+  </div>  
 </header>
 <div class="content">
-<aside class="sidebar">
+
+<section class="stage">
+<div id="canvasWrapper">
+<canvas id="canvas"></canvas>
+<div id="overlayInfo"></div>
+<div class="slim-hint" id="dropHint">Tap the canvas to choose an image • or drag &amp; drop</div>
+<div class="guided" id="guided"></div>
+<div class="badge" id="wedgeBadge"></div>
+
+<div class="below-tools panel">
 <div class="panel">
 <div class="panel-title">Tools</div>
 <div class="toolgrid">
@@ -107,14 +113,7 @@
 <textarea id="caseNotes" placeholder="Patient / Case ID, limb side, postop day, comments…" rows="6"></textarea>
 <div class="tiny">Printed in the right info strip if "Export readouts" is enabled.</div>
 </div>
-</aside>
-<section class="stage">
-<div id="canvasWrapper">
-<canvas id="canvas"></canvas>
-<div id="overlayInfo"></div>
-<div class="slim-hint" id="dropHint">Tap the canvas to choose an image • or drag &amp; drop</div>
-<div class="guided" id="guided"></div>
-<div class="badge" id="wedgeBadge"></div>
+</div>
 </div>
 </section>
 <aside class="inspector">
@@ -145,18 +144,13 @@
 <div id="toast"></div>
 <script src="app.js"></script>
 
-<div id="mobileActionBar" class="mobile-action-bar" style="display:none;">
-  <button id="mobileLoad" class="mobile-action-btn">📁<div>Load</div></button>
+</button>
   <label class="mobile-action-btn"><input id="mobileExportReadouts" type="checkbox" checked/>✅<div>Readouts</div></label>
   <button id="mobileExportPNG" class="mobile-action-btn">🖼️<div>PNG</div></button>
   <button id="mobileHelpBtn" class="mobile-action-btn">❔<div>Help</div></button>
 </div>
 
-<div id="portraitActionBar" class="portrait-action-bar" style="display:none;">
-  <button id="pLoad" class="action-btn">📁 Load</button>
-  <button id="pExport" class="action-btn">🖼 Export</button>
-  <button id="pHelp" class="action-btn">❔ Help</button>
-</div>
-<div id="portraitPresetsPanel" class="portrait-presets-panel" style="display:none;"></div>
+
+
 </body>
 </html>
