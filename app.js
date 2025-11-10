@@ -1022,3 +1022,144 @@ if (document.readyState === 'loading') {
   setupExportPNG();
 }
 })();
+
+
+// --- EXPORT: Canvas + Readouts combined (clinical export) ---
+(function(){
+function setupExportWithReadouts() {
+  const exportBtn = document.getElementById('btnExport');
+  const mobileExportBtn = document.getElementById('mobileExportPNG');
+
+  async function exportCanvasPlusReadouts() {
+    const canvas = document.getElementById('canvas');
+    const readouts = document.getElementById('readouts');
+    if (!canvas) return alert('Canvas not found');
+    // Get displayed sizes
+    const canvasRect = canvas.getBoundingClientRect();
+    const readRect = readouts ? readouts.getBoundingClientRect() : { width: 260, height: canvasRect.height };
+
+    // Desired readout width in CSS pixels (use actual inspector width or fallback)
+    const readoutWidth = Math.max(120, Math.min(400, readRect.width || 260));
+
+    const scale = window.devicePixelRatio || 1;
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = Math.max(1, Math.floor((canvasRect.width + readoutWidth) * scale));
+    exportCanvas.height = Math.max(1, Math.floor(canvasRect.height * scale));
+    const ctx = exportCanvas.getContext('2d');
+
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+    // Draw the main canvas scaled properly
+    // Use CSS pixel coordinates; scale context so we can draw using CSS pixels
+    ctx.save();
+    ctx.scale(scale, scale);
+    try {
+      ctx.drawImage(canvas, 0, 0, canvasRect.width, canvasRect.height);
+    } catch (err) {
+      // Fallback: draw from canvas element by using its internal size
+      try { ctx.drawImage(canvas, 0, 0); } catch(e) { console.error('drawImage failed', e); }
+    }
+    ctx.restore();
+
+    // Draw a vertical divider and a light background for readouts area
+    const readX = canvasRect.width;
+    ctx.save();
+    ctx.scale(scale, scale);
+    ctx.fillStyle = 'rgba(250,250,250,0.98)';
+    ctx.fillRect(readX, 0, readoutWidth, canvasRect.height);
+
+    // Optional divider
+    ctx.fillStyle = 'rgba(200,200,200,0.6)';
+    ctx.fillRect(readX - 1, 8, 1, canvasRect.height - 16);
+
+    // Prepare text: use readouts.innerText or structured entries
+    const text = readouts ? readouts.innerText.trim() : '';
+    const padding = 12;
+    const maxTextWidth = readoutWidth - padding*2;
+
+    // Text styling - choose readable sizes scaled to display
+    const baseFontPx = 12; // CSS px
+    ctx.fillStyle = '#000000';
+    ctx.font = baseFontPx + 'px ui-monospace, monospace';
+    ctx.textBaseline = 'top';
+
+    // Wrap lines
+    const words = text.replace('\r','').split('\n');
+    let y = padding;
+    for (let i=0;i<words.length;i++) {
+      const line = words[i].trim();
+      if (!line) { y += baseFontPx; continue; }
+      // If the line is short, paint directly, else wrap
+      if (ctx.measureText(line).width <= maxTextWidth) {
+        ctx.fillText(line, readX + padding, y);
+        y += baseFontPx + 6;
+      } else {
+        // Wrap by splitting words
+        const parts = line.split(' ');
+        let cur = '';
+        for (let w=0; w<parts.length; w++) {
+          const test = cur ? (cur + ' ' + parts[w]) : parts[w];
+          if (ctx.measureText(test).width <= maxTextWidth) {
+            cur = test;
+          } else {
+            if (cur) { ctx.fillText(cur, readX + padding, y); y += baseFontPx + 6; }
+            cur = parts[w];
+          }
+        }
+        if (cur) { ctx.fillText(cur, readX + padding, y); y += baseFontPx + 6; }
+      }
+      // Stop if running out of space
+      if (y > canvasRect.height - padding) break;
+    }
+
+    ctx.restore();
+
+    // Export using toBlob for compatibility
+    if (exportCanvas.toBlob) {
+      exportCanvas.toBlob((blob) => {
+        if (!blob) return alert('Export failed');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'OsteoPlan_with_readouts.png';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }, 'image/png');
+    } else {
+      const dataURL = exportCanvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = 'OsteoPlan_with_readouts.png';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+  }
+
+  // Hook up handlers (replace previous ones if necessary)
+  function attach() {
+    const exportBtn = document.getElementById('btnExport');
+    const mobileExportBtn = document.getElementById('mobileExportPNG');
+    if (exportBtn) {
+      try { exportBtn.removeEventListener('click', exportCanvasPlusReadouts); } catch(e) {}
+      exportBtn.addEventListener('click', exportCanvasPlusReadouts);
+    }
+    if (mobileExportBtn) {
+      try { mobileExportBtn.removeEventListener('click', exportCanvasPlusReadouts); } catch(e) {}
+      mobileExportBtn.addEventListener('click', exportCanvasPlusReadouts);
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
+  else attach();
+}
+
+// Auto-init
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupExportWithReadouts);
+} else {
+  setupExportWithReadouts();
+}
+})();
