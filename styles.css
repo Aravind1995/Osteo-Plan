@@ -279,3 +279,19 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
     font-weight: 700;
   }
 }
+
+
+/* Centered text with 18px font size for rotate notice */
+@media (orientation: portrait) {
+  .rotate-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px !important;
+    font-weight: 600;
+    height: auto;
+    min-height: 150px;
+    line-height: 1.5;
+  }
+}
