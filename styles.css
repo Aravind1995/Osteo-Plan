@@ -62,104 +62,161 @@ textarea#caseNotes{width:100%;background:rgba(255,255,255,.04);border:1px solid 
 button.ghost:active, button:active{ filter: brightness(1.2); }
 /* Improve contrast for .ghost buttons */
 button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--border); }
-:root{
-  --bg:#0b0d12; --panel:#11141b; --muted:#7a8599; --text:#e8ecf1; --brand:#000000;
-  --accent:#ffffff; --ok:#7dd957; --danger:#ff6b6b; --border:#1c2230; --glass:rgba(255,255,255,.06);
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-body{color:var(--text);background:var(--bg)}
-.app{display:flex;flex-direction:column;height:100%}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)}
-.brand{display:flex;align-items:center;gap:8px;font-weight:700}
-.actions{display:flex;gap:8px;align-items:center}
-.file-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--glass);cursor:pointer}
-.file-btn input{display:none}
-.chk{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:10px;background:var(--glass);border:1px solid var(--border)}
-.content{display:grid;grid-template-columns:300px 1fr 360px;height:calc(100% - 54px)}
-.sidebar,.inspector{overflow:auto;border-right:1px solid var(--border)}
-.inspector{border-right:0;border-left:1px solid var(--border)}
-.stage{position:relative}
-#canvasWrapper{position:relative;height:100%;width:100%;background:#0a0f18}
-#canvas{display:block;width:100%;height:100%;cursor:crosshair;background:#0a0f18}
-.slim-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:var(--muted);font-size:13px;text-align:center;pointer-events:none}
-.guided{position:absolute;left:50%;transform:translateX(-50%);top:12px;background:rgba(0,0,0,.55);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;color:#fff;pointer-events:none}
-.badge{position:absolute;left:10px;bottom:10px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.5);border:1px solid var(--border);font-size:12px;color:#fff;display:none}
-.panel{padding:14px;border-bottom:1px solid var(--border)}
-.panel-title{font-weight:700;margin-bottom:8px}
-.toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.toolgrid button{padding:10px 8px}
-.toolgrid .active{outline:2px solid var(--brand); background:#0f1624}
-.inline{display:flex;gap:6px}
-.rows{display:grid;gap:8px}
-.tiny{font-size:12px;color:var(--muted)}
-.tinyform label{display:grid;grid-template-columns: 1fr auto auto; gap:8px; align-items:center}
-.tinyform input, .tinyform select{width:90px}
-.hint{font-size:12px;color:var(--muted)}
-.ok{font-size:12px;color:var(--ok)}
-.readouts{font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:pre-wrap;background:rgba(255,255,255,.03);padding:8px;border-radius:10px;border:1px solid var(--border);min-height:160px}
-.readouts .entry{display:flex;gap:8px;align-items:flex-start;padding:6px 4px;border-bottom:1px dashed var(--border)}
-.readouts .entry:last-child{border-bottom:0}
-.readouts .title{font-weight:600}
-.readouts .value{white-space:pre-wrap}
-.readouts-actions{display:flex;gap:8px;margin-bottom:6px}
-.readouts .ok{color:var(--ok)} .readouts .warn{color:var(--danger)}
-.logbox{font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:pre-wrap;background:rgba(255,255,255,.03);padding:8px;border-radius:10px;border:1px solid var(--border);min-height:140px;max-height:220px;overflow:auto}
-#overlayInfo{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.45);border:1px solid var(--border);padding:6px 8px;border-radius:8px;font-size:12px;color:var(--text)}
-#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:rgba(0,0,0,.7);border:1px solid var(--border);padding:10px 12px;border-radius:10px;color:#fff;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s}
-#toast.show{opacity:1;transform:translate(-50%,-6px)}
-.help{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .18s ease}
-.help.open{opacity:1;pointer-events:auto}
-.help-box{width:min(760px,92vw);background:#0f1420;border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 80px rgba(0,0,0,.5);transform:translateY(6px);transition:transform .18s ease}
-.help.open .help-box{transform:translateY(0)}
-.help-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding:12px 14px}
-.help-body{padding:14px}
-textarea#caseNotes{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:8px;resize:vertical}
-.small{padding:6px 8px;font-size:12px}
 
 
-/* Readability fix for active tool buttons */
-.toolgrid button{ color: var(--text); background: rgba(255,255,255,0.02); }
-.toolgrid button:active{ filter: brightness(1.2); }
-.toolgrid .active{ outline: 2px solid var(--brand); background: #173052; color: #ffffff; }
-/* Also make generic buttons readable on active */
-button.ghost:active, button:active{ filter: brightness(1.2); }
-/* Improve contrast for .ghost buttons */
-button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--border); }
+/* Mobile responsive adjustments for iPhone Safari/Chrome */
+.mobile-controls{display:none; align-items:center; gap:8px; margin-left:8px;}
+.mobile-toggle{display:none; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--glass); color:var(--text);}
 
-
-/* Mobile / portrait layout adjustments */
-.mobile-compact .app{height:100%}
-.mobile-compact .content{display:block; height:auto}
-.mobile-compact .sidebar, .mobile-compact .inspector{display:none !important}
-.mobile-compact .stage{padding:0}
-#canvasWrapper{height:100%}
-#canvas{width:100% !important; height:100% !important; touch-action:none}
-
-/* Corner buttons visible only on mobile */
-.corner-btn{display:none; position:fixed; top:10px; left:12px; z-index:1200; padding:8px 10px; border-radius:10px; background:rgba(0,0,0,0.6); border:1px solid var(--border); color:var(--text); font-size:18px}
-.corner-btn.right{left:auto; right:12px}
-
-/* Mobile overlay (sheet) */
-.mobile-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1300; display:flex; align-items:flex-end; justify-content:center; padding:12px}
-.mobile-overlay-inner{width:100%; max-width:560px; background:var(--panel); border-radius:12px 12px 6px 6px; overflow:auto; max-height:82vh; box-shadow:0 20px 40px rgba(0,0,0,.6); padding:12px}
-.mobile-overlay .mobile-overlay-close{position:absolute; right:18px; top:12px; z-index:1400; background:transparent; border:0; color:var(--text); font-size:22px}
-
-/* Ensure good touch targets */
-.toolgrid button, button.ghost, .file-btn { min-height:44px; }
-
-/* When in landscape on small devices, make stage full width */
-@media (orientation: landscape) and (max-width:1200px){
-  .content{grid-template-columns: 1fr}
-  .sidebar{display:none}
-  .inspector{display:none}
-  #canvasWrapper{height:calc(100vh - 48px)}
+/* When screen is narrow, hide side columns and show mobile toggles that open overlays */
+@media (max-width:700px){
+  .content{grid-template-columns: 1fr; grid-template-rows: auto 1fr;}
+  .sidebar, .inspector{display:none !important;}
+  .mobile-controls{display:flex;}
+  .mobile-toggle{display:inline-flex;}
+  /* Overlay style when panels opened on mobile */
+  .panel-overlay{
+    position:fixed;
+    top:54px;
+    bottom:0;
+    left:0;
+    right:0;
+    width:100%;
+    background:var(--panel);
+    border-top:1px solid var(--border);
+    z-index:60;
+    overflow:auto;
+    padding:12px;
+  }
+  .panel-overlay .panel{border-bottom:1px solid var(--border);}
+  .panel-overlay .panel-title{font-size:16px}
+  .panel-overlay .close-btn{
+    display:inline-flex; margin-left:8px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,.2);
+  }
 }
 
-/* Accessibility / readability tweaks for small screens */
-@media (max-width:480px){
-  .brand span{display:none}
-  .file-btn span{display:none}
-  .toolgrid{grid-template-columns:repeat(2,1fr)}
-  .topbar{padding:8px}
+
+/* Compact combined overlay for mobile: both tools & results on left toggle, fit without scroll */
+.mobile-controls{display:none; align-items:center; gap:8px; margin-left:8px;}
+.mobile-toggle{display:none; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--glass); color:var(--text); font-size:16px;}
+
+/* When screen is narrow, show single left toggle */
+@media (max-width:700px){
+  .content{grid-template-columns: 1fr; grid-template-rows: auto 1fr;}
+  .sidebar, .inspector{display:none !important;}
+  .mobile-controls{display:flex;}
+  .mobile-toggle{display:inline-flex;}
+
+  .panel-overlay.combined{
+    position:fixed;
+    top:54px;
+    bottom:0;
+    left:0;
+    right:0;
+    width:100%;
+    height:calc(100vh - 54px);
+    background:var(--panel);
+    border-top:1px solid var(--border);
+    z-index:60;
+    overflow:hidden;
+    padding:6px;
+    box-sizing:border-box;
+  }
+  .panel-overlay.combined .close-btn{ padding:6px 8px; border-radius:8px; }
+
+  .combined-container{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:8px;
+    height: calc(100% - 36px);
+    align-items:start;
+  }
+  .combined-left, .combined-right{
+    overflow:auto;
+    padding:6px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background: rgba(255,255,255,0.02);
+    font-size:13px;
+  }
+
+  /* Compact panels: reduce padding, font-size, hide some non-essential hints to fit */
+  .combined-left .panel, .combined-right .panel{ padding:8px; margin-bottom:6px; }
+  .combined-left .panel-title, .combined-right .panel-title{ font-size:14px; margin-bottom:6px; }
+  .combined-left .toolgrid button{ padding:6px 6px; font-size:12px; }
+  .combined-left .readouts{ font-size:11px; min-height:0; max-height:100%; overflow:auto; }
+  .combined-left .tiny, .combined-right .tiny{ display:none; }
+  .combined-left textarea{ height:60px; font-size:12px; }
+  .combined-left input[type="number"], .combined-left select, .combined-right input[type="number"], .combined-right select{ width:70px; font-size:12px; padding:6px; }
+  .combined-left .file-btn, .combined-left .ghost, .combined-right .ghost{ padding:6px 8px; font-size:12px; }
+
+  /* Ensure content scales slightly if still too large */
+  .panel-overlay.combined .combined-container { transform-origin: top left; }
 }
+
+
+/* Increase image/canvas size on mobile to occupy most of screen */
+@media (max-width:700px){
+  #canvasWrapper{ height: calc(100vh - 54px) !important; width:100%;}
+  #canvas{ height: calc(100vh - 54px) !important; width:100%;}
+  .slim-hint{ top:40%; }
+  /* mobile action bar - floating compact bar under topbar */
+  .mobile-action{ display:flex; align-items:center; gap:8px; margin-left:8px; }
+  .mobile-action-toggle{ display:inline-flex; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--glass); color:var(--text); }
+  .mobile-action-bar{
+    position:fixed;
+    top:54px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(10,15,24,0.98);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:6px;
+    display:flex;
+    gap:6px;
+    z-index:80;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  }
+  .mobile-action-btn{ background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:8px 10px; border-radius:8px; color:var(--text); display:flex; flex-direction:column; align-items:center; font-size:14px; min-width:56px; }
+  .mobile-action-btn div{ font-size:11px; margin-top:4px; }
+  /* hide previous big controls to keep single action bar clean */
+  .actions .file-btn, .actions .chk, .actions button.ghost{ display:none !important; }
+}
+
+
+/* Two toggles in topbar on mobile */
+@media (max-width:700px){
+  .mobile-actions{ display:flex; gap:8px; align-items:center; margin-left:8px; }
+  .mobile-action-toggle{ display:inline-flex; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--glass); color:var(--text); font-size:16px; }
+  /* action popup */
+  #mobileActionBar{ left:auto; right:12px; transform:none; }
+  /* tools overlay: reuse combined overlay but positioned left */
+  .panel-overlay.combined{ left:8px; right:8px; top:54px; bottom:8px; padding:8px; }
+  .combined-container{ grid-template-columns: 1fr 1fr; gap:6px; }
+
+  /* Show results below the image on mobile */
+  .inspector{ display:block !important; position:relative; border-left:0; border-top:1px solid var(--border); height:auto; max-height:40vh; overflow:auto; }
+  .content{ grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .stage{ order:0; }
+  .inspector{ order:1; }
+
+  /* Hide desktop controls in actions area */
+  .actions .file-btn, .actions .chk, .actions button.ghost{ display:none !important; }
+
+  /* Ensure canvas uses maximum height above results */
+  #canvasWrapper{ height: calc(100vh - 54px - 40vh) !important; }
+  #canvas{ height: calc(100vh - 54px - 40vh) !important; }
+}
+
+
+/* Ensure overlays are fully interactive and scrollable on mobile portrait */
+.panel-overlay, .panel-overlay.combined {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+.panel-overlay.combined { width: calc(100% - 16px); left:8px; right:8px; top:54px; bottom:8px; }
+/* Ensure mobile action bar is on top */
+.mobile-action-bar { z-index: 10000 !important; }
+/* Make buttons easier to tap */
+.mobile-action-btn, .mobile-action-toggle { touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0.15); }

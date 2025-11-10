@@ -24,11 +24,7 @@
 
 <div class="divider"></div>
 <button class="ghost" id="btnHelp">❔ Help</button>
-
-    <button id="portraitPresets" class="corner-btn" title="Presets (mobile)">☰</button>
-    <button id="portraitActions" class="corner-btn right" title="Actions (mobile)">⚙</button>
-</div>
-</header>
+  <div class="mobile-controls"><button id="btnLeftMenu" class="mobile-toggle" title="Menu">☰</button></div></div></header>
 <div class="content">
 <aside class="sidebar">
 <div class="panel">
@@ -145,118 +141,12 @@
 <div id="toast"></div>
 <script src="app.js"></script>
 
-<script>
-/* Responsive helper: make canvas fit mobile portrait/landscape and provide two corner buttons behaviour.
-   This tries to be non-intrusive: it won't replace existing app logic, just helps layout and resizing. */
-(function(){
-  const topbar = document.querySelector('.topbar');
-  const sidebar = document.querySelector('.sidebar');
-  const inspector = document.querySelector('.inspector');
-  const canvas = document.getElementById('canvas');
-  const canvasWrapper = document.getElementById('canvasWrapper');
-  const presetBtn = document.getElementById('portraitPresets');
-  const actionBtn = document.getElementById('portraitActions');
-
-  function applyMobileLayout(){
-    const isMobile = window.matchMedia('(max-width:900px), (orientation: portrait)').matches;
-    if(isMobile){
-      document.body.classList.add('mobile-compact');
-      // hide sidebars visually but keep them accessible as overlays
-      if(sidebar) sidebar.style.display = 'none';
-      if(inspector) inspector.style.display = 'none';
-      // make canvas wrapper full height under topbar
-      const topH = topbar ? topbar.getBoundingClientRect().height : 54;
-      canvasWrapper.style.height = `calc(100vh - ${topH}px)`;
-      // show portrait buttons
-      if(presetBtn) presetBtn.style.display = 'inline-flex';
-      if(actionBtn) actionBtn.style.display = 'inline-flex';
-    } else {
-      document.body.classList.remove('mobile-compact');
-      if(sidebar) sidebar.style.display = '';
-      if(inspector) inspector.style.display = '';
-      canvasWrapper.style.height = '';
-      if(presetBtn) presetBtn.style.display = 'none';
-      if(actionBtn) actionBtn.style.display = 'none';
-    }
-    resizeCanvasForHiDPI();
-    // announce resize so existing app.js can react if it listens
-    window.dispatchEvent(new Event('app-resize'));
-  }
-
-  function resizeCanvasForHiDPI(){
-    if(!canvas) return;
-    const ratio = window.devicePixelRatio || 1;
-    const w = Math.max(300, Math.floor(canvas.clientWidth * ratio));
-    const h = Math.max(200, Math.floor(canvas.clientHeight * ratio));
-    if(canvas.width !== w || canvas.height !== h){
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext && canvas.getContext('2d');
-      if(ctx && typeof ctx.setTransform === 'function'){
-        ctx.setTransform(ratio,0,0,ratio,0,0);
-      }
-      // some apps attach a global redraw function; trigger if exists
-      if(typeof window.appRedraw === 'function') window.appRedraw();
-    }
-  }
-
-  // Toggle overlay panels (clone content into a floating sheet) for mobile buttons
-  function showOverlayPanel(sourcePanel){
-    if(!sourcePanel) return;
-    // create overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'mobile-overlay';
-    overlay.innerHTML = '<div class="mobile-overlay-inner"></div><button class="mobile-overlay-close">✕</button>';
-    document.body.appendChild(overlay);
-    const inner = overlay.querySelector('.mobile-overlay-inner');
-    // clone content (shallow) and append
-    const clone = sourcePanel.cloneNode(true);
-    clone.style.display = 'block';
-    clone.classList.add('mobile-clone');
-    inner.appendChild(clone);
-    overlay.querySelector('.mobile-overlay-close').addEventListener('click', ()=> overlay.remove());
-    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
-  }
-
-  if(presetBtn){
-    presetBtn.addEventListener('click', ()=>{
-      // prefer the Presets panel if present
-      const part = document.querySelector('.panel .panel-title:contains("Presets")');
-      // fallback to sidebar
-      showOverlayPanel(document.querySelector('.sidebar') || document.querySelector('.panel'));
-    });
-  }
-  if(actionBtn){
-    actionBtn.addEventListener('click', ()=> showOverlayPanel(document.querySelector('.inspector') || document.querySelector('.sidebar')));
-  }
-
-  // windows that don't support :contains querySelector - add helper fallback for presets search
-  document.querySelectorAll('.panel .panel-title').forEach(function(el){
-    if(/presets/i.test(el.textContent)){
-      el.closest('.panel').id = 'mobilePresetsPanel';
-    }
-  });
-  if(presetBtn){
-    presetBtn.addEventListener('click', ()=>{
-      const p = document.getElementById('mobilePresetsPanel');
-      if(p) return showOverlayPanel(p);
-    });
-  }
-
-  // Expose a small API for app.js if it wants to call
-  window.OsteoPlanResponsive = {
-    resize: resizeCanvasForHiDPI,
-    apply: applyMobileLayout
-  };
-
-  // Apply on load + resize + orientationchange
-  window.addEventListener('resize', applyMobileLayout);
-  window.addEventListener('orientationchange', applyMobileLayout);
-  window.addEventListener('load', applyMobileLayout);
-  // initial call
-  applyMobileLayout();
-})();
-</script>
+<div id="mobileActionBar" class="mobile-action-bar" style="display:none;">
+  <button id="mobileLoad" class="mobile-action-btn">📁<div>Load</div></button>
+  <label class="mobile-action-btn"><input id="mobileExportReadouts" type="checkbox" checked/>✅<div>Readouts</div></label>
+  <button id="mobileExportPNG" class="mobile-action-btn">🖼️<div>PNG</div></button>
+  <button id="mobileHelpBtn" class="mobile-action-btn">❔<div>Help</div></button>
+</div>
 
 </body>
 </html>
