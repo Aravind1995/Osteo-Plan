@@ -1,4 +1,4 @@
-/* OsteoLab PRO v7 — generic tools, selectable readouts, export strip */
+/* OsteoPlan v1.0 v7 — generic tools, selectable readouts, export strip */
 (() => {
   const $ = (s)=>document.querySelector(s);
 
@@ -29,6 +29,7 @@
     TTAP:[parseFloat($('#refTTAPLo').value), parseFloat($('#refTTAPHi').value)],
     TTPct:[parseFloat($('#refTTPctLo').value), parseFloat($('#refTTPctHi').value)],
     TTML:[parseFloat($('#refTTMLLo').value), parseFloat($('#refTTMLHi').value)],
+    Slope:[parseFloat($('#refSlopeLo').value), parseFloat($('#refSlopeHi').value)],
     TTSag:[parseFloat($('#refTTSagLo').value), parseFloat($('#refTTSagHi').value)],
     DIVMax: parseFloat($('#refDIVMax').value),
     ClockRight: $('#refClockRight').value,
@@ -111,9 +112,47 @@
   function loadWithObjectURL(file, onok, onfail){
     try{ const url=URL.createObjectURL(file); const im=new Image(); im.onload=()=>{ URL.revokeObjectURL(url); onok(im, 'objectURL'); }; im.onerror=(e)=>{ URL.revokeObjectURL(url); onfail(e); }; im.src=url; }catch(e){ onfail(e); }
   }
-  function applyLoadedImage(loadedImg){ img=loadedImg; imgLoaded=true; imgNaturalW=img.naturalWidth; imgNaturalH=img.naturalHeight; fitImage(); draw(); log(`Image loaded ${imgNaturalW}×${imgNaturalH}`); }
+  
+
+function applyLoadedImage(loadedImg){
+    // Apply new image and reset relevant annotation/readout state
+    img = loadedImg;
+    imgLoaded = true;
+    imgNaturalW = img.naturalWidth || img.width;
+    imgNaturalH = img.naturalHeight || img.height;
+
+    // CLEAR previous annotations/readouts/history/presets
+    shapes = [];
+    history = [];
+    presetState = [];
+    toolState = [];
+    activePreset = null;
+    guided.textContent = '';
+    readoutsEl.innerHTML = '';
+    pixelsPerMM = null;
+    lastJLCAdeg = 0;
+    _currentWedge = null;
+    _bhRect = null;
+    _clockFace = null;
+
+    // Fit and center new image if helper exists, otherwise set canvas size
+    if (typeof fitImage === 'function') {
+        fitImage();
+    } else {
+        scale = 1; originX = 0; originY = 0;
+        setCanvasSize();
+    }
+    draw();
+
+    log(`Image loaded ${imgNaturalW}×${imgNaturalH}`);
+}
+
+
   function loadFromFile(file){ if(!file) return; loadWithDataURL(file, (im)=>applyLoadedImage(im), ()=>{ loadWithObjectURL(file, (im)=>applyLoadedImage(im), ()=>toast('Could not load image')); }); }
-  imageLoader.addEventListener('change', (e)=>{ const f=e.target.files?.[0]; if(f) loadFromFile(f); });
+  
+  // Clear old results when new image is loaded
+  readoutsEl.innerHTML = '';
+imageLoader.addEventListener('change', (e)=>{ const f=e.target.files?.[0]; if(f) loadFromFile(f); });
   wrapper.addEventListener('click', ()=>{ if(!imgLoaded) imageLoader.click(); });
   wrapper.addEventListener('dragover', (e)=>{ e.preventDefault(); });
   wrapper.addEventListener('drop', (e)=>{ e.preventDefault(); const file=e.dataTransfer.files?.[0]; if(file && file.type.startsWith('image/')) loadFromFile(file); });
@@ -169,7 +208,7 @@ function setTool(name){
     readoutsEl.appendChild(entry);
   }
   selAllBtn?.addEventListener('click', ()=>{ readoutsEl.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=true); });
-  selNoneBtn?.addEventListener('click', ()=>{ readoutsEl.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=false); });
+  selNoneBtn?.addEventListener('click', ()=>{ readoutsEl.querySelectorAll('input[type=checkbox]').forEach(c=>{ if(c.checked){ const entry = c.closest('.entry'); if(entry) entry.remove(); }}); });
 
   // --- Generic tools ---
   function handleToolClick(p){
@@ -228,7 +267,8 @@ function setTool(name){
       'MPTA':'MPTA: Tib axis(2) → Joint line (med→lat)',
       'LDFA':'LDFA: Fem axis(2) → Distal joint line',
       'JLCA':'JLCA: Fem JL (med→lat) → Tib JL (med→lat)',
-      'HTO':'HTO: Hip → Knee_med → Knee_lat → Ankle → Hinge → Open_med (wedge shaded)'
+      'HTO':'HTO: Hip → Knee_med → Knee_lat → Ankle → Hinge → Open_med (wedge shaded)',
+      'TibialSlope':'Tibial slope: Plateau (2) → Tibial axis (2)'
     }[name]||'';
     guided.textContent=txt;
   }
@@ -289,7 +329,23 @@ function setTool(name){
       pushReadout('HTO', `Correction θ: ${thetaDeg.toFixed(2)}°  |  Wedge: ${wedgeTxt}`); endPreset(); draw(); return;
     }
 
-    // ACL presets
+    
+    if(activePreset==='TibialSlope'){
+      const labels=['Plateau1','Plateau2','TibAx1','TibAx2'];
+      presetState.push(p); addPoint(p, labels[presetState.length-1]);
+      if(presetState.length===2){ addLine(presetState[0],presetState[1],'Plateau'); }
+      if(presetState.length===4){
+        addLine(presetState[2],presetState[3],'Tibial axis');
+        const ang = angleBetweenTwoLines(presetState[0],presetState[1],presetState[2],presetState[3]);
+        // Convert to posterior tibial slope approximation: slope = 90 - ang
+        const slope = 90 - ang;
+        const ok = within(slope, refs.Slope[0], refs.Slope[1]);
+        pushReadout('Tibial slope', `${slope.toFixed(1)}° ${ok?'<span class="ok">✔</span>':'<span class="warn">✖</span>'} <small>Ref ${refs.Slope[0]}–${refs.Slope[1]}°</small>`);
+        endPreset(); draw();
+      } else guided.textContent='Tibial slope: click next';
+      return;
+    }
+// ACL presets
     if(activePreset==='ACL_TT' || activePreset==='ACL_TT_AP'){
       const labels=['TibAx1','TibAx2','TunnelProx','TunnelDist']; presetState.push(p); addPoint(p,labels[presetState.length-1]);
       if(presetState.length===2){ addLine(presetState[0],presetState[1],'Tibial axis'); }
@@ -398,7 +454,21 @@ function setTool(name){
 
   // Undo / Reset / Save / Load
   btnUndo.addEventListener('click', ()=>{ const op=history.pop(); if(!op) return; if(op.action==='add'){ shapes.splice(-op.count, op.count); } draw(); });
-  btnReset.addEventListener('click', ()=>{ shapes=[]; history=[]; presetState=[]; toolState=[]; activePreset=null; pixelsPerMM=null; lastJLCAdeg=0; _currentWedge=null; wedgeBadge.style.display='none'; _bhRect=null; _clockFace=null; readoutsEl.innerHTML=''; guided.textContent=''; setTool('pan'); draw(); });
+  btnReset.addEventListener('click', ()=>{
+  if(!confirm('Clear drawn lines?')) return;
+  // Clear only drawings and undo history; preserve calibration and readouts
+  if (Array.isArray(shapes)) shapes.length = 0;
+  if (Array.isArray(history)) history.length = 0;
+  // reset temporary drawing state
+  _currentWedge = null;
+  if (typeof wedgeBadge !== 'undefined' && wedgeBadge) wedgeBadge.style.display='none';
+  guided.textContent='';
+  // keep pixelsPerMM (calibration) and readouts intact
+  // do not change active tool on reset — preserve current tool
+  draw();
+  showToast('Drawing lines cleared, results preserved.');
+});
+
   btnSaveJSON.addEventListener('click', ()=>{
     const readoutsData=[...readoutsEl.querySelectorAll('.entry')].map(e=>({checked:e.querySelector('input').checked,title:e.querySelector('.title').textContent.replace(':',''),html:e.querySelector('.value').innerHTML}));
     const data={shapes,pixelsPerMM,lastJLCAdeg,refs, wedge:_currentWedge, bh:_bhRect, clock:_clockFace, kneeSide:kneeSideEl.value, readouts:readoutsData};
@@ -406,56 +476,124 @@ function setTool(name){
   });
   
 
-  // Export with readouts (only checked)
-  btnExport.addEventListener('click', ()=>{
+  
+
+
+
+// Export with readouts (only checked)
+btnExport.addEventListener('click', ()=>{
     const withInfo = !!exportReadoutsEl?.checked;
-    const rect=wrapper.getBoundingClientRect();
-    const DPR=window.devicePixelRatio||1;
-    const sideW = withInfo ? Math.round(320*DPR) : 0;
-    const ex=document.createElement('canvas');
-    ex.width=rect.width*DPR + sideW;
-    ex.height=rect.height*DPR;
-    const cx=ex.getContext('2d');
+    const rect = wrapper.getBoundingClientRect();
+    const DPR = window.devicePixelRatio || 1;
 
-    cx.fillStyle="#000"; cx.fillRect(0,0,ex.width,ex.height);
+    // collect readouts/notes
+    const entries = [...readoutsEl.querySelectorAll('.entry')];
+    const chosen = entries.filter(e => e.querySelector('input')?.checked);
+    const resultsLines = (chosen.length ? chosen : entries).map(e => (`${e.querySelector('.title').textContent} ${e.querySelector('.value').innerText}`).toUpperCase());
+    const notesRaw = (caseNotesEl?.value || '').trim();
+    const notesLine = notesRaw ? ('Notes: ' + notesRaw) : null;
 
-    if(imgLoaded){
-      const iw=imgNaturalW*scale*DPR, ih=imgNaturalH*scale*DPR;
-      const ox=originX*DPR, oy=originY*DPR;
-      cx.drawImage(img,0,0,imgNaturalW,imgNaturalH,ox,oy,iw,ih);
+    const pad = Math.round(20 * DPR);
+    const fontSize = Math.round(22 * DPR);
+    const lineH = Math.round(28 * DPR);
+    const linesCount = resultsLines.length + (notesLine ? 1 : 0);
+    const totalHeight = withInfo ? (pad * 2 + linesCount * lineH) : 0;
+
+    // Compute visible/cropped source region in source pixels
+    const visibleW_img = Math.round(rect.width / scale);
+    const visibleH_img = Math.round(rect.height / scale);
+    const sx = Math.max(0, Math.round((-originX) / scale));
+    const sy = Math.max(0, Math.round((-originY) / scale));
+    const sw = Math.min(imgNaturalW - sx, visibleW_img);
+    const sh = Math.min(imgNaturalH - sy, visibleH_img);
+    const destW = Math.max(1, Math.round(sw * DPR));
+    const destH = Math.max(1, Math.round(sh * DPR));
+
+    // Create canvas sized to the cropped image width (destW) and cropped image height + strip
+    const ex = document.createElement('canvas');
+    ex.width = destW;
+    ex.height = destH + totalHeight;
+    const cx = ex.getContext('2d');
+
+    // Draw cropped image into top of canvas (no white borders)
+    if (imgLoaded) {
+      cx.drawImage(img, sx, sy, sw, sh, 0, 0, destW, destH);
+    } else {
+      // fallback: fill background if no image
+      cx.fillStyle = "#000"; cx.fillRect(0, 0, ex.width, ex.height);
     }
-    function _to(p){ return {x:p.x*scale*DPR+originX*DPR, y:p.y*scale*DPR+originY*DPR}; }
-    function _point(p,label){ const c=_to(p); const r=7*DPR; cx.beginPath(); cx.arc(c.x,c.y,r,0,Math.PI*2); cx.fillStyle='#4cc9f0'; cx.fill(); if(label){ cx.fillStyle='#fff'; cx.font=`${10*DPR}px ui-sans-serif`; cx.fillText(label,c.x+10*DPR,c.y-8*DPR);} }
-    function _line(a,b,label){ const ca=_to(a), cb=_to(b); cx.strokeStyle='#ffd166'; cx.lineWidth=2*DPR; cx.beginPath(); cx.moveTo(ca.x,ca.y); cx.lineTo(cb.x,cb.y); cx.stroke(); if(label){ cx.fillStyle='#fff'; cx.font=`${10*DPR}px ui-sans-serif`; cx.fillText(label,(ca.x+cb.x)/2+6*DPR,(ca.y+cb.y)/2);} }
-    for(const s of shapes){ if(s.type==='point') _point(s.points[0], s.meta?.label); else if(s.type==='line') _line(s.points[0], s.points[1], s.meta?.label); }
-    if (_currentWedge){ const H=_to(_currentWedge.H), M=_to(_currentWedge.M), Mr=_to(_currentWedge.Mrot); cx.strokeStyle='#ffd166'; cx.fillStyle='rgba(255,209,102,0.28)'; cx.beginPath(); cx.moveTo(H.x,H.y); cx.lineTo(M.x,M.y); cx.lineTo(Mr.x,Mr.y); cx.closePath(); cx.stroke(); cx.fill(); }
 
-    if(withInfo){
-      const x0 = rect.width*DPR, W = sideW, pad=14*DPR, line=16*DPR;
-      cx.fillStyle="#0e1420"; cx.fillRect(x0,0,W,ex.height);
-      cx.strokeStyle="#1f2a3d"; cx.lineWidth=1; cx.strokeRect(x0+0.5,0.5,W-1,ex.height-1);
-      cx.fillStyle="#e8ecf1"; cx.font=`${14*DPR}px ui-sans-serif`; cx.fillText("OsteoLab — Report", x0+pad, pad+2);
-      cx.fillStyle="#7a8599"; cx.font=`${10*DPR}px ui-sans-serif`; cx.fillText(new Date().toLocaleString(), x0+pad, pad+line);
-      cx.strokeStyle="#1f2a3d"; cx.beginPath(); cx.moveTo(x0+pad, pad+line+6*DPR); cx.lineTo(x0+W-pad, pad+line+6*DPR); cx.stroke();
-      // gather checked readouts
-      const entries=[...readoutsEl.querySelectorAll('.entry')];
-      const chosen = entries.filter(e=>e.querySelector('input')?.checked);
-      const text = (chosen.length?chosen:entries).map(e=>`${e.querySelector('.title').textContent} ${e.querySelector('.value').innerText}`).join('\n');
-      cx.fillStyle="#e8ecf1"; cx.font=`${12*DPR}px ui-sans-serif`;
-      wrapText(cx, text || 'No measurements yet.', x0+pad, pad+line+22*DPR, W-2*pad, 16*DPR);
-      const notes = (caseNotesEl?.value||'').trim();
-      if(notes){
-        let y0 = pad+line+22*DPR + 24*DPR;
-        cx.fillStyle="#7a8599"; cx.font=`${10*DPR}px ui-sans-serif`; cx.fillText("Notes", x0+pad, y0);
-        cx.fillStyle="#e8ecf1"; cx.font=`${12*DPR}px ui-sans-serif`;
-        wrapText(cx, notes, x0+pad, y0+line, W-2*pad, 16*DPR);
+    // helper functions map to exported canvas coordinates (scale * DPR applied)
+    function _to(p) { return { x: Math.round((p.x - sx) * scale * DPR), y: Math.round((p.y - sy) * scale * DPR) }; }
+    function _point(p, label) {
+      const c = _to(p); const r = 7 * DPR;
+      cx.beginPath(); cx.arc(c.x, c.y, r, 0, Math.PI * 2); cx.fillStyle = "#fff"; cx.fill();
+      if (label) { cx.fillStyle = "#fff"; cx.font = `${12 * DPR}px ui-sans-serif`; cx.fillText(label, c.x + 10 * DPR, c.y - 8 * DPR); }
+    }
+    function _line(a, b, label) {
+      const ca = _to(a), cb = _to(b);
+      cx.beginPath(); cx.moveTo(ca.x, ca.y); cx.lineTo(cb.x, cb.y); cx.strokeStyle = "#fff"; cx.lineWidth = 2 * DPR; cx.stroke();
+      if (label) { cx.fillStyle = "#fff"; cx.font = `${12 * DPR}px ui-sans-serif`; cx.fillText(label, (ca.x + cb.x) / 2 + 6 * DPR, (ca.y + cb.y) / 2); }
+    }
+
+    // draw shapes translated to new coordinates
+    for (const s of shapes) {
+      if (s.type === 'point') _point(s.points[0], s.meta?.label);
+      else if (s.type === 'line') _line(s.points[0], s.points[1], s.meta?.label);
+    }
+    if (_currentWedge) {
+      const H = _to(_currentWedge.H), M = _to(_currentWedge.M), Mr = _to(_currentWedge.Mr);
+      cx.beginPath(); cx.moveTo(H.x, H.y); cx.lineTo(M.x, M.y); cx.lineTo(Mr.x, Mr.y);
+      cx.closePath(); cx.strokeStyle = "#fff"; cx.lineWidth = 2 * DPR; cx.stroke(); cx.fillStyle = "rgba(255,255,255,0.06)"; cx.fill();
+    }
+
+    // Draw bottom strip full width = destW, so readout text block matches image width
+    if (withInfo && totalHeight > 0) {
+      const stripY = destH;
+      cx.fillStyle = "#000";
+      cx.fillRect(0, stripY, destW, totalHeight);
+      // draw text within width of image (destW), right aligned to destW - pad
+      cx.textBaseline = "top";
+      let y = stripY + pad;
+      const xRight = destW - pad;
+      // Draw results lines (ALL CAPS) right-aligned
+      for (let i = 0; i < resultsLines.length; i++) {
+        const ln = resultsLines[i];
+        cx.fillStyle = "#fff";
+        cx.font = `bold ${fontSize}px ui-sans-serif`;
+        const metrics = cx.measureText(ln);
+        const drawX = Math.max(pad, xRight - metrics.width);
+        cx.fillText(ln, drawX, y);
+        y += lineH;
       }
+      // Draw notes (native case) right-aligned
+      if (notesLine) {
+        cx.fillStyle = "#fff";
+        cx.font = `${fontSize}px ui-sans-serif`;
+        const metrics = cx.measureText(notesLine);
+        const drawX = Math.max(pad, xRight - metrics.width);
+        cx.fillText(notesLine, drawX, y);
+        y += lineH;
+      }
+      // Place OsteoPlan mark bottom-left inside strip
+      const markFontSize = Math.round(14 * DPR);
+      cx.font = `${markFontSize}px ui-sans-serif`;
+      cx.fillStyle = "#e8ecf1";
+      const mark = "OsteoPlan v1.0";
+      const markX = pad;
+      const markY = stripY + totalHeight - pad - markFontSize;
+      cx.fillText(mark, markX, markY);
     }
 
-    ex.toBlob((blob)=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='osteolab-pro-v7.png'; a.click(); URL.revokeObjectURL(a.href); });
-  });
-
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    ex.toBlob((blob) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'osteoplan-export.png';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+});
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
     const words = text.split(/\s+/); let lineStr='';
     for(let n=0;n<words.length;n++){
       const test = lineStr + words[n] + ' ';
@@ -472,5 +610,337 @@ function setTool(name){
   helpModal?.addEventListener('click', (e)=>{ const box=helpModal.querySelector('.help-box'); if(box && !box.contains(e.target)) helpModal.classList.remove('open'); });
 
   // init
-  setCanvasSize(); overlayInfo.textContent='Pan/Select'; log('OsteoLab ready (v7)');
+  setCanvasSize(); overlayInfo.textContent='Pan/Select'; log('OsteoPlan ready (v1.0)');
+})();
+
+/* --- Export PNG (readouts + notes) - appended by assistant --- */
+(function(){
+  if (window.__export_png_attached) return;
+  window.__export_png_attached = true;
+
+  const btnExport = document.getElementById('btnExport');
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  const exportReadouts = document.getElementById('exportReadouts');
+  const readouts = document.getElementById('readouts');
+  const caseNotes = document.getElementById('caseNotes');
+
+  if (!btnExport || !canvasWrapper) {
+    console.warn('Export: required DOM elements not found.');
+    return;
+  }
+
+  btnExport.addEventListener('click', async () => {
+    try {
+      // Create overlay container showing readouts/notes
+      let exportContainer = document.createElement('div');
+      exportContainer.style.position = 'absolute';
+      exportContainer.style.bottom = '10px';
+      exportContainer.style.right = '10px';
+      exportContainer.style.background = 'rgba(0,0,0,0.6)';
+      exportContainer.style.color = '#fff';
+      exportContainer.style.fontSize = '12px';
+      exportContainer.style.padding = '10px';
+      exportContainer.style.borderRadius = '10px';
+      exportContainer.style.maxWidth = '320px';
+      exportContainer.style.zIndex = 9999;
+      exportContainer.style.whiteSpace = 'pre-wrap';
+      exportContainer.style.pointerEvents = 'none';
+
+      if (exportReadouts && exportReadouts.checked && readouts) {
+        const notesText = caseNotes && caseNotes.value.trim() ? `Notes:\n${caseNotes.value}\n\n` : '';
+        const readoutText = Array.from(readouts.querySelectorAll('.entry'))
+          .filter(e => e.querySelector('input[type="checkbox"]:checked'))
+          .map(e => {
+            const titleEl = e.querySelector('.title');
+            const valEl = e.querySelector('.value');
+            const title = titleEl ? titleEl.innerText.trim() : '';
+            const val = valEl ? valEl.innerText.trim() : e.innerText.trim();
+            return title ? `${title}: ${val}` : val;
+          })
+          .join('\n');
+
+        exportContainer.textContent = `${notesText}${readoutText}`.trim();
+        canvasWrapper.appendChild(exportContainer);
+      }
+
+      // Load html2canvas from CDN if missing
+      if (typeof html2canvas === 'undefined') {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+          s.onload = resolve;
+          s.onerror = () => reject(new Error('Failed to load html2canvas from CDN'));
+          document.head.appendChild(s);
+        });
+      }
+
+      const screenshot = await html2canvas(canvasWrapper, {
+        useCORS: true,
+        backgroundColor: '#0a0f18',
+        scale: Math.max(1, window.devicePixelRatio || 1)
+      });
+
+      screenshot.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'OsteoPlan_Export.png';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+
+      // Cleanup overlay
+      if (exportContainer.parentNode) exportContainer.remove();
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Export failed. See console for details.');
+    }
+  });
+})();
+
+
+// Mobile overlay toggles — show sidebar/inspector as full-screen overlays on small screens
+(function(){
+  const btnLeft = document.getElementById('btnLeftMenu');
+  const btnRight = document.getElementById('btnRightMenu');
+  let leftOverlay = null, rightOverlay = null;
+
+  function createOverlay(id, contentHtml){
+    const ov = document.createElement('div');
+    ov.className = 'panel-overlay';
+    ov.id = id;
+    const close = document.createElement('div');
+    close.style.display='flex';
+    close.style.justifyContent='space-between';
+    close.style.alignItems='center';
+    close.innerHTML = '<div style="font-weight:700;">Menu</div>';
+    const btn = document.createElement('button');
+    btn.textContent = 'Close';
+    btn.className = 'close-btn';
+    btn.addEventListener('click', ()=>{ ov.remove(); });
+    close.appendChild(btn);
+    ov.appendChild(close);
+    const container = document.createElement('div');
+    container.innerHTML = contentHtml;
+    ov.appendChild(container);
+    return ov;
+  }
+
+  if(btnLeft){
+    btnLeft.addEventListener('click', ()=>{
+      // prevent opening when desktop
+      if(window.innerWidth>700) return;
+      if(leftOverlay) { leftOverlay.remove(); leftOverlay=null; return; }
+      const sidebar = document.querySelector('.sidebar');
+      if(!sidebar) return;
+      leftOverlay = createOverlay('leftOverlay', sidebar.innerHTML);
+      document.body.appendChild(leftOverlay);
+    });
+  }
+  if(btnRight){
+    btnRight.addEventListener('click', ()=>{
+      if(window.innerWidth>700) return;
+      if(rightOverlay) { rightOverlay.remove(); rightOverlay=null; return; }
+      const insp = document.querySelector('.inspector');
+      if(!insp) return;
+      rightOverlay = createOverlay('rightOverlay', insp.innerHTML);
+      document.body.appendChild(rightOverlay);
+    });
+  }
+
+  // Remove overlays on resize to desktop
+  window.addEventListener('resize', ()=>{
+    if(window.innerWidth>700){
+      if(leftOverlay){ leftOverlay.remove(); leftOverlay=null; }
+      if(rightOverlay){ rightOverlay.remove(); rightOverlay=null; }
+    }
+  });
+})();
+
+
+
+
+
+
+
+// Mobile action bar toggle and wiring
+(function(){
+  const btn = document.getElementById('btnActionToggle');
+  const bar = document.getElementById('mobileActionBar');
+  const imageLoader = document.getElementById('imageLoader');
+  const exportReadouts = document.getElementById('exportReadouts');
+  const btnExport = document.getElementById('btnExport');
+  const btnHelp = document.getElementById('btnHelp');
+  const btnSaveJSON = document.getElementById('btnSaveJSON');
+
+  if(btn && bar){
+    btn.addEventListener('click', ()=>{
+      if(window.innerWidth>700) return;
+      bar.style.display = (bar.style.display === 'flex') ? 'none' : 'flex';
+    });
+  }
+  // wire mobileLoad to imageLoader
+  const mobileLoad = document.getElementById('mobileLoad');
+  if(mobileLoad && imageLoader){
+    mobileLoad.addEventListener('click', ()=> imageLoader.click());
+  }
+  // wire mobileExportReadouts to the main checkbox
+  const mobileExportReadouts = document.getElementById('mobileExportReadouts');
+  if(mobileExportReadouts && exportReadouts){
+    // sync states both ways
+    mobileExportReadouts.checked = exportReadouts.checked;
+    mobileExportReadouts.addEventListener('change', ()=> exportReadouts.checked = mobileExportReadouts.checked);
+    exportReadouts.addEventListener('change', ()=> mobileExportReadouts.checked = exportReadouts.checked);
+  }
+  // wire mobileExportPNG to btnExport
+  const mobileExportPNG = document.getElementById('mobileExportPNG');
+  if(mobileExportPNG && btnExport){
+    mobileExportPNG.addEventListener('click', ()=> btnExport.click());
+  }
+  // wire mobileHelpBtn to help modal
+  const mobileHelpBtn = document.getElementById('mobileHelpBtn');
+  if(mobileHelpBtn && btnHelp){
+    mobileHelpBtn.addEventListener('click', ()=> btnHelp.click());
+  }
+
+  // hide bar on resize to desktop
+  window.addEventListener('resize', ()=>{ if(window.innerWidth>700 && bar) bar.style.display='none'; });
+
+})();
+
+
+
+// Mobile: two toggles — Actions (load/export/help) and Tools (tools & presets overlay). Results visible below image.
+(function(){
+  const actionsBtn = document.getElementById('btnActionsToggle');
+  const toolsBtn = document.getElementById('btnToolsToggle');
+  const mobileBar = document.getElementById('mobileActionBar');
+  let toolsOverlay = null;
+
+  // Actions toggle: show/hide mobileActionBar
+  if(actionsBtn && mobileBar){
+    actionsBtn.addEventListener('click', ()=>{
+      if(window.innerWidth>700) return;
+      mobileBar.style.display = (mobileBar.style.display==='flex') ? 'none' : 'flex';
+      // if opening actions, close tools overlay
+      if(mobileBar.style.display==='flex' && toolsOverlay){ toolsOverlay.remove(); toolsOverlay=null; }
+    });
+  }
+
+  // Tools toggle: show combined tools+presets overlay (compact)
+  function createToolsOverlay(sidebarHtml){
+    const ov = document.createElement('div');
+    ov.className = 'panel-overlay combined';
+    ov.style.overflow='auto';
+    const top = document.createElement('div');
+    top.style.display='flex'; top.style.justifyContent='space-between'; top.style.alignItems='center'; top.style.marginBottom='8px';
+    const title = document.createElement('div'); title.innerHTML='<strong>Tools & Presets</strong>';
+    const closeBtn = document.createElement('button'); closeBtn.className='close-btn'; closeBtn.textContent='✕';
+    closeBtn.addEventListener('click', ()=>{ ov.remove(); toolsOverlay=null; });
+    top.appendChild(title); top.appendChild(closeBtn);
+    ov.appendChild(top);
+    const container = document.createElement('div');
+    container.innerHTML = sidebarHtml;
+    ov.appendChild(container);
+    return ov;
+  }
+
+  if(toolsBtn){
+    toolsBtn.addEventListener('click', ()=>{
+      if(window.innerWidth>700) return;
+      // toggle
+      if(toolsOverlay){ toolsOverlay.remove(); toolsOverlay=null; return; }
+      const sidebar = document.querySelector('.sidebar');
+      if(!sidebar) return;
+      toolsOverlay = createToolsOverlay(sidebar.innerHTML);
+      document.body.appendChild(toolsOverlay);
+      // close mobile action bar if open
+      if(mobileBar) mobileBar.style.display='none';
+    });
+  }
+
+  // Close overlays on resize to desktop
+  window.addEventListener('resize', ()=>{
+    if(window.innerWidth>700){
+      if(toolsOverlay){ toolsOverlay.remove(); toolsOverlay=null; }
+      if(mobileBar) mobileBar.style.display='none';
+    }
+  });
+})();
+
+
+
+// Robust export for mobile/desktop: capture the displayed canvas area (wrapper) as PNG
+function exportVisibleCanvas(filename='osteo_export.png'){
+  try{
+    const DPR = window.devicePixelRatio || 1;
+    const wrapRect = wrapper.getBoundingClientRect();
+    const w = Math.max(1, Math.round(wrapRect.width));
+    const h = Math.max(1, Math.round(wrapRect.height));
+    // create temp canvas at DPR scaled resolution
+    const tmp = document.createElement('canvas');
+    tmp.width = Math.round(w * DPR);
+    tmp.height = Math.round(h * DPR);
+    tmp.style.width = w + 'px'; tmp.style.height = h + 'px';
+    const tctx = tmp.getContext('2d');
+    // fill background same as wrapper
+    tctx.fillStyle = getComputedStyle(wrapper).backgroundColor || '#0a0f18';
+    tctx.fillRect(0,0,tmp.width,tmp.height);
+    // draw the main canvas content scaled to fit wrapper box
+    // compute source canvas pixel size
+    const srcCanvas = canvas;
+    // Determine the displayed size of the source canvas (CSS pixels)
+    const srcRect = srcCanvas.getBoundingClientRect();
+    // draw the actual canvas bitmap into tmp canvas, scaling appropriately
+    tctx.drawImage(srcCanvas, 0, 0, srcCanvas.width, srcCanvas.height, 0, 0, tmp.width, tmp.height);
+    // Optionally draw readouts text into bottom-left (if exportReadouts enabled)
+    if(document.getElementById('exportReadouts')?.checked){
+      const ro = document.getElementById('readouts');
+      if(ro){
+        tctx.save();
+        tctx.scale(DPR, DPR);
+        tctx.font = '12px sans-serif';
+        tctx.fillStyle = 'white';
+        // draw a translucent backdrop for readability
+        tctx.globalAlpha = 0.6;
+        const pad=8, lineH=16;
+        const lines = ro.innerText.split('\n').slice(0, 30);
+        const boxW = Math.min(240, Math.max(120, wrapRect.width*0.6));
+        const boxH = (lines.length+1)*lineH + pad*2;
+        tctx.fillRect(8, tmp.height/DPR - boxH - 8, boxW, boxH);
+        tctx.globalAlpha = 1.0;
+        tctx.fillStyle = 'white';
+        for(let i=0;i<lines.length;i++){
+          tctx.fillText(lines[i], 12, tmp.height/DPR - boxH + pad + (i+1)*lineH - 6);
+        }
+        tctx.restore();
+      }
+    }
+    // create blob and download
+    tmp.toBlob((blob)=>{
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1500);
+    }, 'image/png');
+  }catch(e){ console.error('Export failed', e); toast('Export failed'); }
+}
+
+// Wire btnExport to exportVisibleCanvas (override existing if present)
+(function bindExportOverride(){
+  const btnExportEl = document.getElementById('btnExport');
+  if(btnExportEl){
+    btnExportEl.addEventListener('click', (ev)=>{
+      ev.preventDefault(); ev.stopPropagation();
+      exportVisibleCanvas();
+    });
+  }
+  // Also wire mobileExportPNG if exists
+  const mobileExportPNG = document.getElementById('mobileExportPNG');
+  if(mobileExportPNG){
+    mobileExportPNG.addEventListener('click', (e)=>{ e.preventDefault(); exportVisibleCanvas(); });
+  }
 })();

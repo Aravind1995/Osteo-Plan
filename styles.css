@@ -1,6 +1,6 @@
 :root{
-  --bg:#0b0d12; --panel:#11141b; --muted:#7a8599; --text:#e8ecf1; --brand:#4cc9f0;
-  --accent:#ffd166; --ok:#7dd957; --danger:#ff6b6b; --border:#1c2230; --glass:rgba(255,255,255,.06);
+  --bg:#0b0d12; --panel:#11141b; --muted:#7a8599; --text:#e8ecf1; --brand:#000000;
+  --accent:#ffffff; --ok:#7dd957; --danger:#ff6b6b; --border:#1c2230; --glass:rgba(255,255,255,.06);
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
@@ -62,3 +62,161 @@ textarea#caseNotes{width:100%;background:rgba(255,255,255,.04);border:1px solid 
 button.ghost:active, button:active{ filter: brightness(1.2); }
 /* Improve contrast for .ghost buttons */
 button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--border); }
+
+
+/* Mobile responsive adjustments for iPhone Safari/Chrome */
+.mobile-controls{display:none; align-items:center; gap:8px; margin-left:8px;}
+.mobile-toggle{display:none; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--glass); color:var(--text);}
+
+/* When screen is narrow, hide side columns and show mobile toggles that open overlays */
+@media (max-width:700px){
+  .content{grid-template-columns: 1fr; grid-template-rows: auto 1fr;}
+  .sidebar, .inspector{display:none !important;}
+  .mobile-controls{display:flex;}
+  .mobile-toggle{display:inline-flex;}
+  /* Overlay style when panels opened on mobile */
+  .panel-overlay{
+    position:fixed;
+    top:54px;
+    bottom:0;
+    left:0;
+    right:0;
+    width:100%;
+    background:var(--panel);
+    border-top:1px solid var(--border);
+    z-index:60;
+    overflow:auto;
+    padding:12px;
+  }
+  .panel-overlay .panel{border-bottom:1px solid var(--border);}
+  .panel-overlay .panel-title{font-size:16px}
+  .panel-overlay .close-btn{
+    display:inline-flex; margin-left:8px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,.2);
+  }
+}
+
+
+/* Compact combined overlay for mobile: both tools & results on left toggle, fit without scroll */
+.mobile-controls{display:none; align-items:center; gap:8px; margin-left:8px;}
+.mobile-toggle{display:none; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--glass); color:var(--text); font-size:16px;}
+
+/* When screen is narrow, show single left toggle */
+@media (max-width:700px){
+  .content{grid-template-columns: 1fr; grid-template-rows: auto 1fr;}
+  .sidebar, .inspector{display:none !important;}
+  .mobile-controls{display:flex;}
+  .mobile-toggle{display:inline-flex;}
+
+  .panel-overlay.combined{
+    position:fixed;
+    top:54px;
+    bottom:0;
+    left:0;
+    right:0;
+    width:100%;
+    height:calc(100vh - 54px);
+    background:var(--panel);
+    border-top:1px solid var(--border);
+    z-index:60;
+    overflow:hidden;
+    padding:6px;
+    box-sizing:border-box;
+  }
+  .panel-overlay.combined .close-btn{ padding:6px 8px; border-radius:8px; }
+
+  .combined-container{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:8px;
+    height: calc(100% - 36px);
+    align-items:start;
+  }
+  .combined-left, .combined-right{
+    overflow:auto;
+    padding:6px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background: rgba(255,255,255,0.02);
+    font-size:13px;
+  }
+
+  /* Compact panels: reduce padding, font-size, hide some non-essential hints to fit */
+  .combined-left .panel, .combined-right .panel{ padding:8px; margin-bottom:6px; }
+  .combined-left .panel-title, .combined-right .panel-title{ font-size:14px; margin-bottom:6px; }
+  .combined-left .toolgrid button{ padding:6px 6px; font-size:12px; }
+  .combined-left .readouts{ font-size:11px; min-height:0; max-height:100%; overflow:auto; }
+  .combined-left .tiny, .combined-right .tiny{ display:none; }
+  .combined-left textarea{ height:60px; font-size:12px; }
+  .combined-left input[type="number"], .combined-left select, .combined-right input[type="number"], .combined-right select{ width:70px; font-size:12px; padding:6px; }
+  .combined-left .file-btn, .combined-left .ghost, .combined-right .ghost{ padding:6px 8px; font-size:12px; }
+
+  /* Ensure content scales slightly if still too large */
+  .panel-overlay.combined .combined-container { transform-origin: top left; }
+}
+
+
+/* Increase image/canvas size on mobile to occupy most of screen */
+@media (max-width:700px){
+  #canvasWrapper{ height: calc(100vh - 54px) !important; width:100%;}
+  #canvas{ height: calc(100vh - 54px) !important; width:100%;}
+  .slim-hint{ top:40%; }
+  /* mobile action bar - floating compact bar under topbar */
+  .mobile-action{ display:flex; align-items:center; gap:8px; margin-left:8px; }
+  .mobile-action-toggle{ display:inline-flex; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--glass); color:var(--text); }
+  .mobile-action-bar{
+    position:fixed;
+    top:54px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(10,15,24,0.98);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:6px;
+    display:flex;
+    gap:6px;
+    z-index:80;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  }
+  .mobile-action-btn{ background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:8px 10px; border-radius:8px; color:var(--text); display:flex; flex-direction:column; align-items:center; font-size:14px; min-width:56px; }
+  .mobile-action-btn div{ font-size:11px; margin-top:4px; }
+  /* hide previous big controls to keep single action bar clean */
+  .actions .file-btn, .actions .chk, .actions button.ghost{ display:none !important; }
+}
+
+
+/* Two toggles in topbar on mobile */
+@media (max-width:700px){
+  .mobile-actions{ display:flex; gap:8px; align-items:center; margin-left:8px; }
+  .mobile-action-toggle{ display:inline-flex; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--glass); color:var(--text); font-size:16px; }
+  /* action popup */
+  #mobileActionBar{ left:auto; right:12px; transform:none; }
+  /* tools overlay: reuse combined overlay but positioned left */
+  .panel-overlay.combined{ left:8px; right:8px; top:54px; bottom:8px; padding:8px; }
+  .combined-container{ grid-template-columns: 1fr 1fr; gap:6px; }
+
+  /* Show results below the image on mobile */
+  .inspector{ display:block !important; position:relative; border-left:0; border-top:1px solid var(--border); height:auto; max-height:40vh; overflow:auto; }
+  .content{ grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .stage{ order:0; }
+  .inspector{ order:1; }
+
+  /* Hide desktop controls in actions area */
+  .actions .file-btn, .actions .chk, .actions button.ghost{ display:none !important; }
+
+  /* Ensure canvas uses maximum height above results */
+  #canvasWrapper{ height: calc(100vh - 54px - 40vh) !important; }
+  #canvas{ height: calc(100vh - 54px - 40vh) !important; }
+}
+
+
+/* Ensure overlays are fully interactive and scrollable on mobile portrait */
+.panel-overlay, .panel-overlay.combined {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+.panel-overlay.combined { width: calc(100% - 16px); left:8px; right:8px; top:54px; bottom:8px; }
+/* Ensure mobile action bar is on top */
+.mobile-action-bar { z-index: 10000 !important; }
+/* Make buttons easier to tap */
+.mobile-action-btn, .mobile-action-toggle { touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0.15); }

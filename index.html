@@ -4,17 +4,15 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>OsteoLab — PRO (v7)</title>
+<title>OsteoPlan v1.0</title>
+<link rel="icon" href="icon.png">
 <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
 <div class="app">
 <header class="topbar">
-<div class="brand">
-<svg aria-hidden="true" height="22" viewbox="0 0 24 24" width="22"><path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 15h-2v-2h2Zm0-4h-2V7h2Z" fill="currentColor"></path></svg>
-<span>OsteoLab</span>
-<small class="beta">PRO</small>
-</div>
+<div class="brand"><img src="icon.png" alt="OsteoPlan" style="height:22px;width:22px;object-fit:contain;border-radius:4px;margin-right:8px;">
+<span>OsteoPlan v1.0</span></div>
 <div class="actions">
 <label class="file-btn">
 <input accept="image/*,.jpg,.jpeg,.png,.bmp,.gif,.webp" id="imageLoader" type="file"/>
@@ -26,8 +24,7 @@
 
 <div class="divider"></div>
 <button class="ghost" id="btnHelp">❔ Help</button>
-</div>
-</header>
+  <div class="mobile-controls"><button id="btnLeftMenu" class="mobile-toggle" title="Menu">☰</button></div></div></header>
 <div class="content">
 <aside class="sidebar">
 <div class="panel">
@@ -43,7 +40,7 @@
 </div>
 <div class="panel">
 <div class="panel-title">Presets</div>
-<select id="presetSelect"><option value="">— choose —</option><optgroup label="Alignment"><option value="HKA">HKA</option><option value="MPTA">MPTA</option><option value="LDFA">LDFA</option><option value="JLCA">JLCA</option><option value="HTO">HTO (Miniaci)</option></optgroup><optgroup label="ACL"><option value="ACL_TT">ACL – Tibial Tunnel Angle (Lat)</option><option value="ACL_TT_AP">ACL – Tibial Tunnel Inclination (AP)</option><option value="ACL_TT_PCT">ACL – Tibial Tunnel % (AP)</option><option value="ACL_TT_ML">ACL – Tibial Tunnel % (ML)</option><option value="ACL_TT_SAG">ACL – Tibial Tunnel vs Plateau (Sagittal)</option><option value="ACL_BH">ACL – Femoral Tunnel (Bernard–Hertel)</option><option value="ACL_DIV">ACL – Screw–Graft Divergence</option><option value="ACL_LEN">ACL – Screw Length</option><option value="ACL_CLOCK">ACL – Femoral Clock‑face</option></optgroup></select>
+<select id="presetSelect"><option value="">— choose —</option><optgroup label="Alignment"><option value="HKA">HKA</option><option value="TibialSlope">Tibial Slope</option><option value="MPTA">MPTA</option><option value="LDFA">LDFA</option><option value="JLCA">JLCA</option><option value="HTO">HTO (Miniaci)</option></optgroup><optgroup label="ACL"><option value="ACL_TT">ACL – Tibial Tunnel Angle (Lat)</option><option value="ACL_TT_AP">ACL – Tibial Tunnel Inclination (AP)</option><option value="ACL_TT_PCT">ACL – Tibial Tunnel % (AP)</option><option value="ACL_TT_ML">ACL – Tibial Tunnel % (ML)</option><option value="ACL_BH">ACL – Femoral Tunnel (Bernard–Hertel)</option><option value="ACL_LEN">ACL – Screw Length</option><option value="ACL_CLOCK">ACL – Femoral Clock‑face</option></optgroup></select>
 <div class="hint">HTO: wedge size in mm (after calibration) and shaded wedge.</div>
 </div>
 <div class="panel" style="display:none">
@@ -54,9 +51,9 @@
 <option value="ACL_TT_AP">ACL – Tibial Tunnel Inclination (AP)</option>
 <option value="ACL_TT_PCT">ACL – Tibial Tunnel % (AP)</option>
 <option value="ACL_TT_ML">ACL – Tibial Tunnel % (ML)</option>
-<option value="ACL_TT_SAG">ACL – Tibial Tunnel vs Plateau (Sagittal)</option>
+
 <option value="ACL_BH">ACL – Femoral Tunnel (Bernard–Hertel)</option>
-<option value="ACL_DIV">ACL – Screw–Graft Divergence</option>
+
 <option value="ACL_LEN">ACL – Screw Length</option>
 <option value="ACL_CLOCK">ACL – Femoral Clock‑face</option>
 </select>
@@ -83,16 +80,17 @@
 <div class="panel" style="display:none">
 <div class="panel-title">Reference (editable)</div>
 <div class="rows tinyform">
-<label>HKA (°): <input id="refHKAlo" step="0.5" type="number" value="177"/>–<input id="refHKAhi" step="0.5" type="number" value="183"/></label>
+<label>HKA (°): <input id="refHKAlo" step="0.5" type="number" value="1"/>–<input id="refHKAhi" step="0.5" type="number" value="3"/></label>
 <label>MPTA (°): <input id="refMPTAlo" step="0.5" type="number" value="85"/>–<input id="refMPTAhi" step="0.5" type="number" value="90"/></label>
 <label>LDFA (°): <input id="refLDFAlo" step="0.5" type="number" value="85"/>–<input id="refLDFAhi" step="0.5" type="number" value="90"/></label>
+<label>Tibial slope (°): <input id="refSlopeLo" step="0.5" type="number" value="5"/>–<input id="refSlopeHi" step="0.5" type="number" value="10"/></label>
 <label>JLCA (°): <input id="refJLCAlo" step="0.5" type="number" value="0"/>–<input id="refJLCAhi" step="0.5" type="number" value="3"/></label>
 <label>BH deep–shallow (%): <input id="refBHxlo" step="0.5" type="number" value="22"/>–<input id="refBHxhi" step="0.5" type="number" value="28"/></label>
 <label>BH high–low (%): <input id="refBHylo" step="0.5" type="number" value="28"/>–<input id="refBHyhi" step="0.5" type="number" value="35"/></label>
 <label>TT angle Lat (°): <input id="refTTLatLo" step="0.5" type="number" value="50"/>–<input id="refTTLatHi" step="0.5" type="number" value="65"/></label>
-<label>TT incl AP (°): <input id="refTTAPLo" step="0.5" type="number" value="60"/>–<input id="refTTAPHi" step="0.5" type="number" value="75"/></label>
+<label>TT incl AP (°): <input id="refTTAPLo" step="0.5" type="number" value="60"/>–<input id="refTTAPHi" step="0.5" type="number" value="70"/></label>
 <label>TT % AP: <input id="refTTPctLo" step="0.5" type="number" value="40"/>–<input id="refTTPctHi" step="0.5" type="number" value="45"/></label>
-<label>TT % ML: <input id="refTTMLLo" step="0.5" type="number" value="45"/>–<input id="refTTMLHi" step="0.5" type="number" value="55"/></label>
+<label>TT % ML: <input id="refTTMLLo" step="0.5" type="number" value="48"/>–<input id="refTTMLHi" step="0.5" type="number" value="55"/></label>
 <label>TT vs Plateau (°): <input id="refTTSagLo" step="0.5" type="number" value="50"/>–<input id="refTTSagHi" step="0.5" type="number" value="70"/></label>
 <label>Divergence (° ≤): <input id="refDIVMax" step="0.5" type="number" value="15"/></label>
 <label>Clock-face target: <select id="refClockRight"><option>10 o'clock</option><option selected="">10:30</option><option>11</option></select> • <select id="refClockLeft"><option>1</option><option selected="">1:30</option><option>2</option></select></label>
@@ -142,5 +140,13 @@
 </div>
 <div id="toast"></div>
 <script src="app.js"></script>
+
+<div id="mobileActionBar" class="mobile-action-bar" style="display:none;">
+  <button id="mobileLoad" class="mobile-action-btn">📁<div>Load</div></button>
+  <label class="mobile-action-btn"><input id="mobileExportReadouts" type="checkbox" checked/>✅<div>Readouts</div></label>
+  <button id="mobileExportPNG" class="mobile-action-btn">🖼️<div>PNG</div></button>
+  <button id="mobileHelpBtn" class="mobile-action-btn">❔<div>Help</div></button>
+</div>
+
 </body>
 </html>
