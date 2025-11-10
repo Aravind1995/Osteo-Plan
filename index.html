@@ -24,7 +24,11 @@
 
 <div class="divider"></div>
 <button class="ghost" id="btnHelp">❔ Help</button>
-  </div></header>
+  <div class="mobile-controls"><button id="btnLeftMenu" class="mobile-toggle" title="Menu">☰</button></div></div>  <div class="portrait-buttons">
+    <button id="btnPresetsToggle" class="portrait-btn">⚙ Presets</button>
+    <button id="btnActionsToggle" class="portrait-btn">⚡ Actions</button>
+  </div>
+</header>
 <div class="content">
 <aside class="sidebar">
 <div class="panel">
@@ -141,12 +145,18 @@
 <div id="toast"></div>
 <script src="app.js"></script>
 
-</button>
+<div id="mobileActionBar" class="mobile-action-bar" style="display:none;">
+  <button id="mobileLoad" class="mobile-action-btn">📁<div>Load</div></button>
   <label class="mobile-action-btn"><input id="mobileExportReadouts" type="checkbox" checked/>✅<div>Readouts</div></label>
   <button id="mobileExportPNG" class="mobile-action-btn">🖼️<div>PNG</div></button>
   <button id="mobileHelpBtn" class="mobile-action-btn">❔<div>Help</div></button>
 </div>
 
-
+<div id="portraitActionBar" class="portrait-action-bar" style="display:none;">
+  <button id="pLoad" class="action-btn">📁 Load</button>
+  <button id="pExport" class="action-btn">🖼 Export</button>
+  <button id="pHelp" class="action-btn">❔ Help</button>
+</div>
+<div id="portraitPresetsPanel" class="portrait-presets-panel" style="display:none;"></div>
 </body>
 </html>
