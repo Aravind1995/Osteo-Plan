@@ -1151,3 +1151,38 @@ function exportVisibleCanvas(filename='osteo_export.png'){
   window.addEventListener('resize', function(){ enableCanvas(50); });
   document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') enableCanvas(50); });
 })();
+
+
+
+// Portrait notice: ask user to rotate device to landscape for best experience
+(function(){
+  const modal = document.getElementById('portraitNotice');
+  const btnOk = document.getElementById('portraitOk');
+  function isPortrait(){
+    try{ return window.innerHeight > window.innerWidth; }catch(e){ return false; }
+  }
+  function showIfPortrait(){
+    if(!modal) return;
+    if(isPortrait() && window.innerWidth < 1000){
+      modal.style.display = 'flex';
+      // prevent interaction with underlying app
+      document.body.style.pointerEvents = 'none';
+      modal.style.pointerEvents = 'auto';
+    } else {
+      modal.style.display = 'none';
+      document.body.style.pointerEvents = 'auto';
+    }
+  }
+  window.addEventListener('load', showIfPortrait);
+  window.addEventListener('resize', showIfPortrait);
+  window.addEventListener('orientationchange', function(){ setTimeout(showIfPortrait, 120); });
+  if(btnOk){
+    btnOk.addEventListener('click', function(e){
+      e.stopPropagation();
+      modal.style.display = 'none';
+      document.body.style.pointerEvents = 'auto';
+    });
+  }
+  // initial check
+  showIfPortrait();
+})();

@@ -278,3 +278,37 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
 .below-tools .toolgrid{ grid-template-columns: repeat(4, 1fr); gap:6px; }
 .below-tools .toolgrid button{ padding:8px; font-size:13px; }
 .below-tools select, .below-tools input{ font-size:13px; padding:6px; }
+
+
+/* Portrait notice modal */
+.portrait-notice{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999999;
+  pointer-events:auto;
+}
+.portrait-notice-box{
+  width: min(520px, 90vw);
+  background: linear-gradient(180deg, rgba(17,20,26,0.98), rgba(14,17,22,0.98));
+  border: 1px solid var(--border);
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  text-align:center;
+  color:var(--text);
+}
+.portrait-notice-box h3{ margin:0 0 8px; font-size:18px; }
+.portrait-notice-box p{ margin:0 0 12px; color:var(--muted); }
+.portrait-actions{ display:flex; justify-content:center; gap:8px; }
+.portrait-notice .ghost{ padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--glass); cursor:pointer; }
+@media (orientation:landscape){
+  /* hide modal in landscape */
+  .portrait-notice{ display:none !important; pointer-events:none !important; }
+}
+@media (min-width:1000px){
+  /* hide on large screens (desktop) */
+  .portrait-notice{ display:none !important; pointer-events:none !important; }
+}
