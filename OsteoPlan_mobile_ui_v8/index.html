@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>OsteoPlan v1.0</title>
+<link rel="icon" href="icon.png">
+<link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+<div class="brand"><img src="icon.png" alt="OsteoPlan" style="height:22px;width:22px;object-fit:contain;border-radius:4px;margin-right:8px;">
+<span>OsteoPlan v1.0</span></div>
+<div class="actions">
+<label class="file-btn">
+<input accept="image/*,.jpg,.jpeg,.png,.bmp,.gif,.webp" id="imageLoader" type="file"/>
+<span class="ico">📁</span> Load Image
+        </label>
+<label class="chk"><input checked="" id="exportReadouts" type="checkbox"/> Export readouts</label>
+<button class="ghost" id="btnExport"><span class="ico">🖼️</span> Export PNG</button>
+<button class="ghost" id="btnSaveJSON"><span class="ico">💾</span> Save</button>
+
+<div class="divider"></div>
+<button class="ghost" id="btnHelp">❔ Help</button>
+  </div></header>
+<div class="content">
+<aside class="sidebar">
+<div class="panel">
+<div class="panel-title">Tools</div>
+<div class="toolgrid">
+<button class="tool active" data-tool="pan" title="Pan/Select (V)">Pan</button>
+<button class="tool" data-tool="line" title="Line (L)">Line</button>
+<button class="tool" data-tool="angle3" title="Angle (A)">Angle</button>
+<button class="tool" data-tool="calibrate" title="Calibrate (C)">Cal</button>
+<button id="btnUndo" title="Undo (Z)">Undo</button>
+<button id="btnReset" title="Reset (keep image)">Reset</button>
+</div>
+</div>
+<div class="panel">
+<div class="panel-title">Presets</div>
+<select id="presetSelect"><option value="">— choose —</option><optgroup label="Alignment"><option value="HKA">HKA</option><option value="TibialSlope">Tibial Slope</option><option value="MPTA">MPTA</option><option value="LDFA">LDFA</option><option value="JLCA">JLCA</option><option value="HTO">HTO (Miniaci)</option></optgroup><optgroup label="ACL"><option value="ACL_TT">ACL – Tibial Tunnel Angle (Lat)</option><option value="ACL_TT_AP">ACL – Tibial Tunnel Inclination (AP)</option><option value="ACL_TT_PCT">ACL – Tibial Tunnel % (AP)</option><option value="ACL_TT_ML">ACL – Tibial Tunnel % (ML)</option><option value="ACL_BH">ACL – Femoral Tunnel (Bernard–Hertel)</option><option value="ACL_LEN">ACL – Screw Length</option><option value="ACL_CLOCK">ACL – Femoral Clock‑face</option></optgroup></select>
+<div class="hint">HTO: wedge size in mm (after calibration) and shaded wedge.</div>
+</div>
+<div class="panel" style="display:none">
+<div class="panel-title">Presets — ACL Post‑op</div>
+<select id="presetACL">
+<option value="">— choose —</option>
+<option value="ACL_TT">ACL – Tibial Tunnel Angle (Lat)</option>
+<option value="ACL_TT_AP">ACL – Tibial Tunnel Inclination (AP)</option>
+<option value="ACL_TT_PCT">ACL – Tibial Tunnel % (AP)</option>
+<option value="ACL_TT_ML">ACL – Tibial Tunnel % (ML)</option>
+
+<option value="ACL_BH">ACL – Femoral Tunnel (Bernard–Hertel)</option>
+
+<option value="ACL_LEN">ACL – Screw Length</option>
+<option value="ACL_CLOCK">ACL – Femoral Clock‑face</option>
+</select>
+<div class="rows">
+<label>Knee side (for Clock‑face)</label>
+<select id="kneeSide">
+<option selected="" value="right">Right</option>
+<option value="left">Left</option>
+</select>
+</div>
+</div>
+<div class="panel">
+<div class="panel-title">Calibration</div>
+<div class="rows">
+<label>Known length</label>
+<div class="inline">
+<input id="calLen" step="0.1" type="number" value="100"/>
+<select id="calUnits"><option value="mm">mm</option><option value="cm">cm</option></select>
+</div>
+<div class="tiny">Select Cal tool, click two points on the marker, set value.</div>
+<div class="ok" id="calStatus"></div>
+</div>
+</div>
+<div class="panel" style="display:none">
+<div class="panel-title">Reference (editable)</div>
+<div class="rows tinyform">
+<label>HKA (°): <input id="refHKAlo" step="0.5" type="number" value="1"/>–<input id="refHKAhi" step="0.5" type="number" value="3"/></label>
+<label>MPTA (°): <input id="refMPTAlo" step="0.5" type="number" value="85"/>–<input id="refMPTAhi" step="0.5" type="number" value="90"/></label>
+<label>LDFA (°): <input id="refLDFAlo" step="0.5" type="number" value="85"/>–<input id="refLDFAhi" step="0.5" type="number" value="90"/></label>
+<label>Tibial slope (°): <input id="refSlopeLo" step="0.5" type="number" value="5"/>–<input id="refSlopeHi" step="0.5" type="number" value="10"/></label>
+<label>JLCA (°): <input id="refJLCAlo" step="0.5" type="number" value="0"/>–<input id="refJLCAhi" step="0.5" type="number" value="3"/></label>
+<label>BH deep–shallow (%): <input id="refBHxlo" step="0.5" type="number" value="22"/>–<input id="refBHxhi" step="0.5" type="number" value="28"/></label>
+<label>BH high–low (%): <input id="refBHylo" step="0.5" type="number" value="28"/>–<input id="refBHyhi" step="0.5" type="number" value="35"/></label>
+<label>TT angle Lat (°): <input id="refTTLatLo" step="0.5" type="number" value="50"/>–<input id="refTTLatHi" step="0.5" type="number" value="65"/></label>
+<label>TT incl AP (°): <input id="refTTAPLo" step="0.5" type="number" value="60"/>–<input id="refTTAPHi" step="0.5" type="number" value="70"/></label>
+<label>TT % AP: <input id="refTTPctLo" step="0.5" type="number" value="40"/>–<input id="refTTPctHi" step="0.5" type="number" value="45"/></label>
+<label>TT % ML: <input id="refTTMLLo" step="0.5" type="number" value="48"/>–<input id="refTTMLHi" step="0.5" type="number" value="55"/></label>
+<label>TT vs Plateau (°): <input id="refTTSagLo" step="0.5" type="number" value="50"/>–<input id="refTTSagHi" step="0.5" type="number" value="70"/></label>
+<label>Divergence (° ≤): <input id="refDIVMax" step="0.5" type="number" value="15"/></label>
+<label>Clock-face target: <select id="refClockRight"><option>10 o'clock</option><option selected="">10:30</option><option>11</option></select> • <select id="refClockLeft"><option>1</option><option selected="">1:30</option><option>2</option></select></label>
+<button class="ghost" id="refSave">Save refs</button>
+</div>
+<div class="hint">Edit to your preference; values go ✔ if inside range.</div>
+</div>
+<div class="panel">
+<div class="panel-title">Case notes (exported)</div>
+<textarea id="caseNotes" placeholder="Patient / Case ID, limb side, postop day, comments…" rows="6"></textarea>
+<div class="tiny">Printed in the right info strip if "Export readouts" is enabled.</div>
+</div>
+</aside>
+<section class="stage">
+<div id="canvasWrapper">
+<canvas id="canvas"></canvas>
+<div id="overlayInfo"></div>
+<div class="slim-hint" id="dropHint">Tap the canvas to choose an image • or drag &amp; drop</div>
+<div class="guided" id="guided"></div>
+<div class="badge" id="wedgeBadge"></div>
+</div>
+</section>
+<aside class="inspector">
+<div class="panel">
+<div class="panel-title">Results</div>
+<div class="readouts-actions">
+<button class="ghost small" id="selAll">Select all</button>
+<button class="ghost small" id="selNone">Clear</button>
+</div>
+<div class="readouts" id="readouts"></div>
+</div>
+</aside>
+</div>
+</div>
+<div class="help" id="helpModal">
+<div class="help-box">
+<div class="help-head">
+<h3>Help</h3>
+<button class="ghost" id="helpClose">✕</button>
+</div>
+<div class="help-body">
+<p>Guided presets: HKA, MPTA, LDFA, JLCA, HTO; ACL: TT (Lat/AP), TT % (AP/ML), TT vs Plateau (Sagittal), Bernard–Hertel, Divergence, Screw length, Clock‑face.</p>
+<p>Use Line, Angle, Cal tools for generic measures. Calibrate to get mm.</p>
+<p>Readouts panel stores each measurement with a checkbox; checked items are exported.</p>
+</div>
+</div>
+</div>
+<div id="toast"></div>
+<script src="app.js"></script>
+
+</button>
+  <label class="mobile-action-btn"><input id="mobileExportReadouts" type="checkbox" checked/>✅<div>Readouts</div></label>
+  <button id="mobileExportPNG" class="mobile-action-btn">🖼️<div>PNG</div></button>
+  <button id="mobileHelpBtn" class="mobile-action-btn">❔<div>Help</div></button>
+</div>
+
+
+</body>
+</html>
