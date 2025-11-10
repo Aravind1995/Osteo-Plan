@@ -220,3 +220,124 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
 .mobile-action-bar { z-index: 10000 !important; }
 /* Make buttons easier to tap */
 .mobile-action-btn, .mobile-action-toggle { touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0.15); }
+
+
+/* Portrait mode notice */
+@media (orientation: portrait) {
+  .rotate-notice {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    z-index: 9999;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+}
+
+@media (orientation: landscape) {
+  .rotate-notice { display: none !important; }
+}
+
+
+/* Updated portrait mode message box styling */
+@media (orientation: portrait) {
+  .rotate-notice {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 400px;
+    background: rgba(0,0,0,0.85);
+    color: #ffffff;
+    text-align: center;
+    padding: 20px 24px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    z-index: 9999;
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+}
+
+@media (orientation: landscape) {
+  .rotate-notice { display: none !important; }
+}
+
+
+/* Larger text size for rotate notice */
+@media (orientation: portrait) {
+  .rotate-notice {
+    font-size: 28px !important;
+    font-weight: 700;
+  }
+}
+
+
+/* Centered text with 18px font size for rotate notice */
+@media (orientation: portrait) {
+  .rotate-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px !important;
+    font-weight: 600;
+    height: auto;
+    min-height: 150px;
+    line-height: 1.5;
+  }
+}
+
+
+/* Strong override to ensure perfect centering of the rotate notice */
+/* Use a fixed size box and flex centering; highest specificity and !important to override earlier rules */
+@media (orientation: portrait) {
+  #rotateNotice.rotate-notice, .rotate-notice, #rotateNotice {
+    box-sizing: border-box !important;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 86% !important;
+    max-width: 420px !important;
+    min-height: 220px !important;
+    padding: 18px 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    background: rgba(0,0,0,0.92) !important;
+    color: #ffffff !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    border-radius: 16px !important;
+    z-index: 2147483647 !important; /* maximum z-index to be on top */
+    border: 2px solid rgba(255,255,255,0.28) !important;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6) !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    word-break: break-word !important;
+  }
+
+  /* Ensure emoji doesn't push baseline — force baseline alignment in center */
+  #rotateNotice.rotate-notice span, .rotate-notice span, #rotateNotice span {
+    display:inline-block !important;
+    vertical-align: middle !important;
+    line-height: 1 !important;
+  }
+}
+
+/* Hide notice in landscape explicitly */
+@media (orientation: landscape) {
+  #rotateNotice.rotate-notice, .rotate-notice, #rotateNotice { display:none !important; }
+}
