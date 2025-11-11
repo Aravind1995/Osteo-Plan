@@ -103,6 +103,9 @@
 <textarea id="caseNotes" placeholder="Patient / Case ID, limb side, postop day, comments…" rows="6"></textarea>
 <div class="tiny">Printed in the right info strip if "Export readouts" is enabled.</div>
 </div>
+
+
+
 </aside>
 <section class="stage">
 <div id="canvasWrapper">
@@ -122,6 +125,20 @@
 </div>
 <div class="readouts" id="readouts"></div>
 </div>
+
+<div class="panel" id="appearancePanel">
+  <div class="panel-title">Appearance</div>
+  <div class="rows">
+    <label>Pointer size: <span id="ptrSizeVal">100%</span></label>
+    <input id="pointerSize" type="range" min="50" max="200" value="100"/>
+    <label>Line thickness: <span id="lineThickVal">100%</span></label>
+    <input id="lineThickness" type="range" min="50" max="300" value="100"/>
+    <div class="tiny">Adjust pointer (point) marker size and drawn line thickness. Changes apply immediately.</div>
+  </div>
+</div>
+
+
+
 </aside>
 </div>
 </div>

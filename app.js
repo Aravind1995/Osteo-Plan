@@ -1,4 +1,8 @@
 /* OsteoPlan v1.0 v7 — generic tools, selectable readouts, export strip */
+
+// Appearance settings controlled by UI (pointer size & line thickness)
+window.OP_SETTINGS = window.OP_SETTINGS || { pointerSize: 1.0, lineThickness: 1.0 };
+
 (() => {
   const $ = (s)=>document.querySelector(s);
 
@@ -87,16 +91,16 @@
   function mmFromPx(px){ if(!pixelsPerMM) return null; return px / pixelsPerMM; }
 
   // draw primitives
-  function drawPoint(pt,label){ const r=7*DPR; const c=imageToCanvasPx(pt); ctx.beginPath(); ctx.arc(c.x,c.y,r,0,Math.PI*2); ctx.fillStyle="#4cc9f0"; ctx.fill(); if(label){ ctx.fillStyle="#e8ecf1"; ctx.font=`${10*DPR}px ui-sans-serif`; ctx.fillText(label,c.x+10*DPR,c.y-8*DPR);} }
-  function drawLine(a,b,label){ const ca=imageToCanvasPx(a), cb=imageToCanvasPx(b); ctx.lineWidth=2*DPR; ctx.strokeStyle="#ffd166"; ctx.beginPath(); ctx.moveTo(ca.x,ca.y); ctx.lineTo(cb.x,cb.y); ctx.stroke(); if(label){ ctx.fillStyle="#e8ecf1"; ctx.font=`${10*DPR}px ui-sans-serif`; ctx.fillText(label,(ca.x+cb.x)/2+6*DPR,(ca.y+cb.y)/2);} }
+  function drawPoint(pt,label){ const r=7 * DPR * (window.OP_SETTINGS.pointerSize || 1); const c=imageToCanvasPx(pt); ctx.beginPath(); ctx.arc(c.x,c.y,r,0,Math.PI*2); ctx.fillStyle="#4cc9f0"; ctx.fill(); if(label){ ctx.fillStyle="#e8ecf1"; ctx.font=`${10*DPR}px ui-sans-serif`; ctx.fillText(label,c.x+10*DPR,c.y-8*DPR);} }
+  function drawLine(a,b,label){ const ca=imageToCanvasPx(a), cb=imageToCanvasPx(b); ctx.lineWidth=2 * DPR * (window.OP_SETTINGS.lineThickness || 1) * (window.OP_SETTINGS.lineThickness || 1); ctx.strokeStyle="#ffd166"; ctx.beginPath(); ctx.moveTo(ca.x,ca.y); ctx.lineTo(cb.x,cb.y); ctx.stroke(); if(label){ ctx.fillStyle="#e8ecf1"; ctx.font=`${10*DPR}px ui-sans-serif`; ctx.fillText(label,(ca.x+cb.x)/2+6*DPR,(ca.y+cb.y)/2);} }
 
   function draw(){
     ctx.save(); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle="#0a0f18"; ctx.fillRect(0,0,canvas.width,canvas.height);
     if(imgLoaded){ const iw=imgNaturalW*scale*DPR, ih=imgNaturalH*scale*DPR, ox=originX*DPR, oy=originY*DPR; ctx.drawImage(img,0,0,imgNaturalW,imgNaturalH,ox,oy,iw,ih); dropHint.style.display='none'; } else { dropHint.style.display='block'; }
     for(const s of shapes){ if(s.type==='point') drawPoint(s.points[0], s.meta?.label); else if(s.type==='line') drawLine(s.points[0], s.points[1], s.meta?.label); }
-    if (_currentWedge){ const {H, M, Mrot} = _currentWedge; const Hpx=imageToCanvasPx(H), Mpx=imageToCanvasPx(M), Mrpx=imageToCanvasPx(Mrot); ctx.beginPath(); ctx.moveTo(Hpx.x,Hpx.y); ctx.lineTo(Mpx.x,Mpx.y); ctx.lineTo(Mrpx.x,Mrpx.y); ctx.closePath(); ctx.fillStyle='rgba(255,209,102,0.28)'; ctx.fill(); ctx.lineWidth=1*DPR; ctx.strokeStyle='#ffd166'; ctx.stroke(); }
-    if (_bhRect){ const {O, U, V, L, H, C, txt} = _bhRect; ctx.lineWidth=1*DPR; ctx.strokeStyle='#66d9ff'; ctx.fillStyle='rgba(76,201,240,0.12)'; const corners=[O, {x:O.x+U.x*L,y:O.y+U.y*L}, {x:O.x+U.x*L+V.x*H,y:O.y+U.y*L+V.y*H}, {x:O.x+V.x*H,y:O.y+V.y*H}]; ctx.beginPath(); const c0=imageToCanvasPx(corners[0]); ctx.moveTo(c0.x,c0.y); for(let i=1;i<4;i++){ const cp=imageToCanvasPx(corners[i]); ctx.lineTo(cp.x,cp.y); } ctx.closePath(); ctx.stroke(); ctx.fill(); if(C){ const Cp=imageToCanvasPx(C); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(Cp.x,Cp.y,3*DPR,0,Math.PI*2); ctx.fill(); ctx.font=`${12*DPR}px ui-sans-serif`; ctx.fillText(txt, Cp.x+8*DPR, Cp.y-8*DPR); } }
-    if (_clockFace){ const {center, rim, centerPx} = _clockFace; const cc=imageToCanvasPx(center); const rr=imageToCanvasPx(rim); const R=Math.hypot(rr.x-cc.x, rr.y-cc.y); ctx.lineWidth=1*DPR; ctx.strokeStyle='#a0ffa0'; ctx.beginPath(); ctx.arc(cc.x,cc.y,R,0,Math.PI*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cc.x, cc.y-R); ctx.lineTo(cc.x, cc.y-R+8*DPR); ctx.stroke(); if(centerPx){ ctx.fillStyle='#fff'; ctx.beginPath(); const tp=imageToCanvasPx(centerPx); ctx.arc(tp.x,tp.y,3*DPR,0,Math.PI*2); ctx.fill(); } }
+    if (_currentWedge){ const {H, M, Mrot} = _currentWedge; const Hpx=imageToCanvasPx(H), Mpx=imageToCanvasPx(M), Mrpx=imageToCanvasPx(Mrot); ctx.beginPath(); ctx.moveTo(Hpx.x,Hpx.y); ctx.lineTo(Mpx.x,Mpx.y); ctx.lineTo(Mrpx.x,Mrpx.y); ctx.closePath(); ctx.fillStyle='rgba(255,209,102,0.28)'; ctx.fill(); ctx.lineWidth=1 * DPR * (window.OP_SETTINGS.lineThickness || 1) * (window.OP_SETTINGS.lineThickness || 1); ctx.strokeStyle='#ffd166'; ctx.stroke(); }
+    if (_bhRect){ const {O, U, V, L, H, C, txt} = _bhRect; ctx.lineWidth=1 * DPR * (window.OP_SETTINGS.lineThickness || 1) * (window.OP_SETTINGS.lineThickness || 1); ctx.strokeStyle='#66d9ff'; ctx.fillStyle='rgba(76,201,240,0.12)'; const corners=[O, {x:O.x+U.x*L,y:O.y+U.y*L}, {x:O.x+U.x*L+V.x*H,y:O.y+U.y*L+V.y*H}, {x:O.x+V.x*H,y:O.y+V.y*H}]; ctx.beginPath(); const c0=imageToCanvasPx(corners[0]); ctx.moveTo(c0.x,c0.y); for(let i=1;i<4;i++){ const cp=imageToCanvasPx(corners[i]); ctx.lineTo(cp.x,cp.y); } ctx.closePath(); ctx.stroke(); ctx.fill(); if(C){ const Cp=imageToCanvasPx(C); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(Cp.x,Cp.y, 3 * DPR * (window.OP_SETTINGS.pointerSize || 1),0,Math.PI*2); ctx.fill(); ctx.font=`${12*DPR}px ui-sans-serif`; ctx.fillText(txt, Cp.x+8*DPR, Cp.y-8*DPR); } }
+    if (_clockFace){ const {center, rim, centerPx} = _clockFace; const cc=imageToCanvasPx(center); const rr=imageToCanvasPx(rim); const R=Math.hypot(rr.x-cc.x, rr.y-cc.y); ctx.lineWidth=1 * DPR * (window.OP_SETTINGS.lineThickness || 1) * (window.OP_SETTINGS.lineThickness || 1); ctx.strokeStyle='#a0ffa0'; ctx.beginPath(); ctx.arc(cc.x,cc.y,R,0,Math.PI*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cc.x, cc.y-R); ctx.lineTo(cc.x, cc.y-R+8*DPR); ctx.stroke(); if(centerPx){ ctx.fillStyle='#fff'; ctx.beginPath(); const tp=imageToCanvasPx(centerPx); ctx.arc(tp.x,tp.y, 3 * DPR * (window.OP_SETTINGS.pointerSize || 1),0,Math.PI*2); ctx.fill(); } }
     ctx.restore();
     // update overlay info (scale, image size)
     try{ let info = (currentTool==='pan'? 'Pan/Select' : currentTool); if(imgLoaded){ if(pixelsPerMM){ info += ' • Scale: '+pixelsPerMM.toFixed(2)+' px/mm ('+(1/pixelsPerMM).toFixed(3)+' mm/px)'; } info += ' • Img: '+imgNaturalW+'×'+imgNaturalH+' px'; } overlayInfo.innerText = info; }catch(e){}
@@ -526,13 +530,13 @@ btnExport.addEventListener('click', ()=>{
     // helper functions map to exported canvas coordinates (scale * DPR applied)
     function _to(p) { return { x: Math.round((p.x - sx) * scale * DPR), y: Math.round((p.y - sy) * scale * DPR) }; }
     function _point(p, label) {
-      const c = _to(p); const r = 7 * DPR;
+      const c = _to(p); const r = 7 * DPR * (window.OP_SETTINGS.pointerSize || 1);
       cx.beginPath(); cx.arc(c.x, c.y, r, 0, Math.PI * 2); cx.fillStyle = "#fff"; cx.fill();
       if (label) { cx.fillStyle = "#fff"; cx.font = `${12 * DPR}px ui-sans-serif`; cx.fillText(label, c.x + 10 * DPR, c.y - 8 * DPR); }
     }
     function _line(a, b, label) {
       const ca = _to(a), cb = _to(b);
-      cx.beginPath(); cx.moveTo(ca.x, ca.y); cx.lineTo(cb.x, cb.y); cx.strokeStyle = "#fff"; cx.lineWidth = 2 * DPR; cx.stroke();
+      cx.beginPath(); cx.moveTo(ca.x, ca.y); cx.lineTo(cb.x, cb.y); cx.strokeStyle = "#fff"; cx.lineWidth = 2 * DPR * (window.OP_SETTINGS.lineThickness || 1) * (window.OP_SETTINGS.lineThickness || 1); cx.stroke();
       if (label) { cx.fillStyle = "#fff"; cx.font = `${12 * DPR}px ui-sans-serif`; cx.fillText(label, (ca.x + cb.x) / 2 + 6 * DPR, (ca.y + cb.y) / 2); }
     }
 
@@ -544,7 +548,7 @@ btnExport.addEventListener('click', ()=>{
     if (_currentWedge) {
       const H = _to(_currentWedge.H), M = _to(_currentWedge.M), Mr = _to(_currentWedge.Mr);
       cx.beginPath(); cx.moveTo(H.x, H.y); cx.lineTo(M.x, M.y); cx.lineTo(Mr.x, Mr.y);
-      cx.closePath(); cx.strokeStyle = "#fff"; cx.lineWidth = 2 * DPR; cx.stroke(); cx.fillStyle = "rgba(255,255,255,0.06)"; cx.fill();
+      cx.closePath(); cx.strokeStyle = "#fff"; cx.lineWidth = 2 * DPR * (window.OP_SETTINGS.lineThickness || 1) * (window.OP_SETTINGS.lineThickness || 1); cx.stroke(); cx.fillStyle = "rgba(255,255,255,0.06)"; cx.fill();
     }
 
     // Draw bottom strip full width = destW, so readout text block matches image width
@@ -1024,142 +1028,28 @@ if (document.readyState === 'loading') {
 })();
 
 
-// --- EXPORT: Canvas + Readouts combined (clinical export) ---
+// --- Appearance UI hookup (added by patch) ---
 (function(){
-function setupExportWithReadouts() {
-  const exportBtn = document.getElementById('btnExport');
-  const mobileExportBtn = document.getElementById('mobileExportPNG');
-
-  async function exportCanvasPlusReadouts() {
-    const canvas = document.getElementById('canvas');
-    const readouts = document.getElementById('readouts');
-    if (!canvas) return alert('Canvas not found');
-    // Get displayed sizes
-    const canvasRect = canvas.getBoundingClientRect();
-    const readRect = readouts ? readouts.getBoundingClientRect() : { width: 260, height: canvasRect.height };
-
-    // Desired readout width in CSS pixels (use actual inspector width or fallback)
-    const readoutWidth = Math.max(120, Math.min(400, readRect.width || 260));
-
-    const scale = window.devicePixelRatio || 1;
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = Math.max(1, Math.floor((canvasRect.width + readoutWidth) * scale));
-    exportCanvas.height = Math.max(1, Math.floor(canvasRect.height * scale));
-    const ctx = exportCanvas.getContext('2d');
-
-    // White background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-
-    // Draw the main canvas scaled properly
-    // Use CSS pixel coordinates; scale context so we can draw using CSS pixels
-    ctx.save();
-    ctx.scale(scale, scale);
-    try {
-      ctx.drawImage(canvas, 0, 0, canvasRect.width, canvasRect.height);
-    } catch (err) {
-      // Fallback: draw from canvas element by using its internal size
-      try { ctx.drawImage(canvas, 0, 0); } catch(e) { console.error('drawImage failed', e); }
-    }
-    ctx.restore();
-
-    // Draw a vertical divider and a light background for readouts area
-    const readX = canvasRect.width;
-    ctx.save();
-    ctx.scale(scale, scale);
-    ctx.fillStyle = 'rgba(250,250,250,0.98)';
-    ctx.fillRect(readX, 0, readoutWidth, canvasRect.height);
-
-    // Optional divider
-    ctx.fillStyle = 'rgba(200,200,200,0.6)';
-    ctx.fillRect(readX - 1, 8, 1, canvasRect.height - 16);
-
-    // Prepare text: use readouts.innerText or structured entries
-    const text = readouts ? readouts.innerText.trim() : '';
-    const padding = 12;
-    const maxTextWidth = readoutWidth - padding*2;
-
-    // Text styling - choose readable sizes scaled to display
-    const baseFontPx = 12; // CSS px
-    ctx.fillStyle = '#000000';
-    ctx.font = baseFontPx + 'px ui-monospace, monospace';
-    ctx.textBaseline = 'top';
-
-    // Wrap lines
-    const words = text.replace('\r','').split('\n');
-    let y = padding;
-    for (let i=0;i<words.length;i++) {
-      const line = words[i].trim();
-      if (!line) { y += baseFontPx; continue; }
-      // If the line is short, paint directly, else wrap
-      if (ctx.measureText(line).width <= maxTextWidth) {
-        ctx.fillText(line, readX + padding, y);
-        y += baseFontPx + 6;
-      } else {
-        // Wrap by splitting words
-        const parts = line.split(' ');
-        let cur = '';
-        for (let w=0; w<parts.length; w++) {
-          const test = cur ? (cur + ' ' + parts[w]) : parts[w];
-          if (ctx.measureText(test).width <= maxTextWidth) {
-            cur = test;
-          } else {
-            if (cur) { ctx.fillText(cur, readX + padding, y); y += baseFontPx + 6; }
-            cur = parts[w];
-          }
-        }
-        if (cur) { ctx.fillText(cur, readX + padding, y); y += baseFontPx + 6; }
-      }
-      // Stop if running out of space
-      if (y > canvasRect.height - padding) break;
-    }
-
-    ctx.restore();
-
-    // Export using toBlob for compatibility
-    if (exportCanvas.toBlob) {
-      exportCanvas.toBlob((blob) => {
-        if (!blob) return alert('Export failed');
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'OsteoPlan_with_readouts.png';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      }, 'image/png');
-    } else {
-      const dataURL = exportCanvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = dataURL;
-      link.download = 'OsteoPlan_with_readouts.png';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }
+  function $(id){ return document.getElementById(id); }
+  function setPointerSize(v){
+    window.OP_SETTINGS.pointerSize = v;
+    var el = $('ptrSizeVal'); if(el) el.textContent = Math.round(v*100)+'%';
+    requestAnimationFrame(()=>{ if (window.render) window.render(); });
   }
-
-  // Hook up handlers (replace previous ones if necessary)
-  function attach() {
-    const exportBtn = document.getElementById('btnExport');
-    const mobileExportBtn = document.getElementById('mobileExportPNG');
-    if (exportBtn) {
-      try { exportBtn.removeEventListener('click', exportCanvasPlusReadouts); } catch(e) {}
-      exportBtn.addEventListener('click', exportCanvasPlusReadouts);
-    }
-    if (mobileExportBtn) {
-      try { mobileExportBtn.removeEventListener('click', exportCanvasPlusReadouts); } catch(e) {}
-      mobileExportBtn.addEventListener('click', exportCanvasPlusReadouts);
-    }
+  function setLineThickness(v){
+    window.OP_SETTINGS.lineThickness = v;
+    var el = $('lineThickVal'); if(el) el.textContent = Math.round(v*100)+'%';
+    requestAnimationFrame(()=>{ if (window.render) window.render(); });
   }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
-  else attach();
-}
-
-// Auto-init
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', setupExportWithReadouts);
-} else {
-  setupExportWithReadouts();
-}
+  document.addEventListener('DOMContentLoaded', function(){
+    var p = $('pointerSize'), l = $('lineThickness');
+    if(p){
+      p.addEventListener('input', function(e){ setPointerSize(this.value/100); });
+      setPointerSize(p.value/100);
+    }
+    if(l){
+      l.addEventListener('input', function(e){ setLineThickness(this.value/100); });
+      setLineThickness(l.value/100);
+    }
+  });
 })();
