@@ -341,3 +341,20 @@ button.ghost{ color: var(--text); background: rgba(255,255,255,0.06); border: 1p
 @media (orientation: landscape) {
   #rotateNotice.rotate-notice, .rotate-notice, #rotateNotice { display:none !important; }
 }
+
+
+
+/* Mobile: stack sidebar, stage, inspector vertically so the stage gets priority */
+@media (max-width: 900px) {
+  .content { display: flex; flex-direction: column; height: auto; }
+  .stage { order: 0; width: 100%; }
+  .sidebar { order: 1; width: 100%; border-right: 0; border-top:1px solid var(--border); max-height: 40vh; overflow:auto; }
+  .inspector { order: 2; width: 100%; border-left:0; border-top:1px solid var(--border); max-height: 50vh; overflow:auto; }
+  #canvasWrapper { height: 60vh; min-height: 300px; }
+  #canvas{height:100%}
+  /* make panels comfortable on narrow screens */
+  .panel{padding:12px}
+  .toolgrid{grid-template-columns:repeat(2,1fr)}
+  .topbar{padding:8px}
+  .brand{font-size:18px}
+}
